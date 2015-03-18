@@ -1,0 +1,32 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"testing"
+)
+
+func TestNewCrawler(t *testing.T) {
+	c, err := NewCrawler()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(c.urlList) != 0 {
+		t.Fatal("Invalid url list")
+	}
+}
+
+func TestNewCrawlerError(t *testing.T) {
+	c := NewCrawlerError("test error")
+	if c.Error() != "Crawler: test error" {
+		t.Fatal("Invalid CrawlerError")
+	}
+}
+
+func ExampleSetURL() {
+	c, err := NewCrawler()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Crawler: %v\n", c)
+}
