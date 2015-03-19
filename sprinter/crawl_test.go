@@ -1,4 +1,4 @@
-package main
+package sprinter
 
 import (
 	"fmt"
@@ -20,6 +20,20 @@ func TestNewCrawlerError(t *testing.T) {
 	c := NewCrawlerError("test error")
 	if c.Error() != "Crawler: test error" {
 		t.Fatal("Invalid CrawlerError")
+	}
+}
+
+func TestSetURL(t *testing.T) {
+	c, err := NewCrawler()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = c.AddURL("http://www.google.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.urlList[0].String() != "http://www.google.com" {
+		t.Fatal(err)
 	}
 }
 

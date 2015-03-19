@@ -1,4 +1,4 @@
-package main
+package sprinter
 
 import (
 	"net/url"
@@ -37,8 +37,8 @@ func NewCrawler() (c Crawler, err error) {
 	return
 }
 
-// Set the internal base url to start crawling from.
-func (c *Crawler) SetURL(URL string) (err error) {
+// Add the internal base url to start crawling from.
+func (c *Crawler) AddURL(URL string) (err error) {
 	var parsedUrl *url.URL
 	parsedUrl, err = url.Parse(URL)
 	if err != nil {
