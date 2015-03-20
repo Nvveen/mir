@@ -1,7 +1,6 @@
 package sprinter
 
 import (
-	"fmt"
 	"log"
 	"testing"
 )
@@ -37,10 +36,11 @@ func TestSetURL(t *testing.T) {
 	}
 }
 
-func ExampleSetURL() {
+func ExampleAddURL() {
 	c, err := NewCrawler()
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Crawler: %v\n", c)
+	c.AddURL("http://www.google.com")
+	// Output:
 }

@@ -30,7 +30,7 @@ func (c CrawlerError) Error() string {
 func NewCrawler() (c Crawler, err error) {
 	defer func() {
 		if lErr := recover(); lErr != nil {
-			err = CrawlerError{err: "Failed to make a Crawler object"}
+			err = NewCrawlerError("Failed to make a Crawler object")
 			c = Crawler{}
 		}
 	}()
@@ -45,5 +45,20 @@ func (c *Crawler) AddURL(URL string) (err error) {
 		return
 	}
 	c.urlList = append(c.urlList, parsedUrl)
+	return
+}
+
+// Retrieve a url from the crawler's list by index.
+func (c *Crawler) GetURL(i int) (ret *url.URL, err error) {
+	defer func() {
+		if err := recover(); err != nil {
+			err = NewCrawlerError("Invalid element in url list")
+			c = nil
+		}
+	}()
+	ret = c.urlList[i]
+	if ret == nil {
+		err = CrawlerError{err: "Invalid element in url list"}
+	}
 	return
 }
