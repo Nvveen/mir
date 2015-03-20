@@ -1,6 +1,9 @@
 package sprinter
 
 import (
+	"golang.org/x/net/html"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 )
 
@@ -61,4 +64,39 @@ func (c *Crawler) GetURL(i int) (ret *url.URL, err error) {
 		err = CrawlerError{err: "Invalid element in url list"}
 	}
 	return
+}
+
+// Retrieve the HTML content of a url with index i in the Crawler.
+func (c *Crawler) RetrieveHTML(i int) (result string, err error) {
+	url, err := c.GetURL(i)
+	if err != nil {
+		return
+	}
+	resp, err := http.Get(url.String())
+	if err != nil {
+		return
+	}
+	var b []byte
+	b, err = ioutil.ReadAll(resp.Body)
+	result = string(b)
+	return
+}
+
+func (c *Crawler) ExtractInfo(i int) (err error) {
+	url, err := c.GetURL(i)
+	if err != nil {
+		return
+	}
+	resp, err := http.Get(url.String())
+	if err != nil {
+		return
+	}
+	z := html.NewTokenizer(resp.Body)
+	_ = z // TODO remove this
+	for {
+		// tt := z.Next()
+		// if tt == html.ErrorToken {
+		// 	return NewCrawlerError("Error parsing html: " + string(z.Err())
+		// }
+	}
 }

@@ -1,29 +1,27 @@
-package sprinter
+package sprinter_test
 
 import (
-	"log"
+	"fmt"
+	"mir/sprinter"
 	"testing"
 )
 
 func TestNewCrawler(t *testing.T) {
-	c, err := NewCrawler()
+	_, err := sprinter.NewCrawler()
 	if err != nil {
 		t.Fatal(err)
-	}
-	if len(c.urlList) != 0 {
-		t.Fatal("Invalid url list")
 	}
 }
 
 func TestNewCrawlerError(t *testing.T) {
-	c := NewCrawlerError("test error")
+	c := sprinter.NewCrawlerError("test error")
 	if c.Error() != "Crawler: test error" {
 		t.Fatal("Invalid CrawlerError")
 	}
 }
 
 func TestSetURL(t *testing.T) {
-	c, err := NewCrawler()
+	c, err := sprinter.NewCrawler()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,16 +29,64 @@ func TestSetURL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c.urlList[0].String() != "http://www.google.com" {
+}
+
+func TestCrawler_GetURL(t *testing.T) {
+	c, err := sprinter.NewCrawler()
+	if err != nil {
 		t.Fatal(err)
+	}
+	err = c.AddURL("http://www.google.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := c.GetURL(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.String() != "http://www.google.com" {
+		t.Fatal("invalid URL returned")
 	}
 }
 
-func ExampleAddURL() {
-	c, err := NewCrawler()
+func ExampleCrawler_GetURL() {
+	c, err := sprinter.NewCrawler()
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 	c.AddURL("http://www.google.com")
+	result, err := c.GetURL(0)
+	if err != nil {
+		return
+	}
+	fmt.Print(result)
 	// Output:
+	// http://www.google.com
+}
+
+func TestRetrieveHTML(t *testing.T) {
+	c, err := sprinter.NewCrawler()
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.AddURL("http://www.google.com")
+	result, err := c.RetrieveHTML(0)
+	if err != nil {
+		t.Fatal(err)
+	} else if len(result) == 0 {
+		t.Fatal("no response from http://www.google.com")
+	}
+}
+
+func ExampleCrawler_RetrieveHTML(t *testing.T) {
+	c, err := sprinter.NewCrawler()
+	if err != nil {
+		return
+	}
+	c.AddURL("http://www.google.com")
+	result, err := c.RetrieveHTML(0)
+	if err != nil {
+		return
+	}
+	fmt.Printf("%s\n", result)
 }
