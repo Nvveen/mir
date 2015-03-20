@@ -92,11 +92,10 @@ func (c *Crawler) ExtractInfo(i int) (err error) {
 		return
 	}
 	z := html.NewTokenizer(resp.Body)
-	_ = z // TODO remove this
 	for {
-		// tt := z.Next()
-		// if tt == html.ErrorToken {
-		// 	return NewCrawlerError("Error parsing html: " + string(z.Err())
-		// }
+		tt := z.Next()
+		if tt == html.ErrorToken {
+			return NewCrawlerError("Error parsing html: " + z.Err().Error())
+		}
 	}
 }
