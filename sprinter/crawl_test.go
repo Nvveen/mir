@@ -90,3 +90,15 @@ func ExampleCrawler_RetrieveHTML(t *testing.T) {
 	}
 	fmt.Printf("%s\n", result)
 }
+
+func TestCrawler_ExtractInfo(t *testing.T) {
+	c, err := sprinter.NewCrawler()
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.AddURL("http://www.leidenuniv.nl")
+	err = c.ExtractInfo(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+}

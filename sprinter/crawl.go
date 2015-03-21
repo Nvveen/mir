@@ -1,10 +1,11 @@
 package sprinter
 
 import (
-	"golang.org/x/net/html"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	"golang.org/x/net/html"
 )
 
 // A web crawler structure that stores information on what pages
@@ -82,6 +83,7 @@ func (c *Crawler) RetrieveHTML(i int) (result string, err error) {
 	return
 }
 
+// The main function that extracts various information for a url and its page.
 func (c *Crawler) ExtractInfo(i int) (err error) {
 	url, err := c.GetURL(i)
 	if err != nil {
@@ -91,11 +93,28 @@ func (c *Crawler) ExtractInfo(i int) (err error) {
 	if err != nil {
 		return
 	}
-	z := html.NewTokenizer(resp.Body)
-	for {
-		tt := z.Next()
-		if tt == html.ErrorToken {
-			return NewCrawlerError("Error parsing html: " + z.Err().Error())
-		}
+	doc, err := html.Parse(resp.Body)
+	if err != nil {
+		return
 	}
+	var walker func(*html.Node) error
+	walker = func(n *html.Node) (err error) {
+		// Extract links
+		if n.Type == html.ElementNode && n.Data == "a" {
+			for i := range n.Attr {
+				if n.Attr[i].Key == "href" {
+					err = c.AddURL(n.Attr[i].Val)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			walker(c)
+		}
+		return
+	}
+	walker(doc)
+	return
 }
