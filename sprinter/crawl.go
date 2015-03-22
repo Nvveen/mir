@@ -8,6 +8,8 @@ import (
 	"golang.org/x/net/html"
 )
 
+// TODO change urllist to our custom type
+
 // A web crawler structure that stores information on what pages
 // it visits.
 type Crawler struct {
