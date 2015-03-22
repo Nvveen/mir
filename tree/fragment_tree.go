@@ -14,13 +14,13 @@ import (
 // succesfull, a large number of links need to stored (compared to a
 // simple string list.
 type FragmentTree struct {
-	root *node
+	root *fragmentNode
 }
 
 // A simple node structure used by the FragmentTree data structure.
-type node struct {
+type fragmentNode struct {
 	label    string
-	children []*node
+	children []*fragmentNode
 }
 
 // Make a new FragmentTree object.
@@ -36,11 +36,11 @@ func (f *FragmentTree) AddURL(url *url.URL) (err error) {
 		return
 	}
 	if f.root == nil {
-		f.root = new(node)
+		f.root = new(fragmentNode)
 	}
 	_ = words
-	var fn func(p *node, parent *node, i int)
-	fn = func(p *node, parent *node, i int) {
+	var fn func(p *fragmentNode, parent *fragmentNode, i int)
+	fn = func(p *fragmentNode, parent *fragmentNode, i int) {
 		if i > len(words)-1 {
 			return
 		}
@@ -53,7 +53,7 @@ func (f *FragmentTree) AddURL(url *url.URL) (err error) {
 		// This part does not exist
 		c := p
 		for j := i; j < len(words); j++ {
-			c.children = append(c.children, new(node))
+			c.children = append(c.children, new(fragmentNode))
 			c.children[len(c.children)-1].label = words[j]
 			c = c.children[len(c.children)-1]
 		}
