@@ -2,6 +2,7 @@ package tree
 
 import (
 	"bytes"
+	"fmt"
 	"net/url"
 )
 
@@ -12,7 +13,7 @@ import (
 // for sorted storage of urls.
 type BinaryTree struct {
 	root *binaryNode
-	urls []string
+	urls linkedList
 }
 
 // A binaryNode is the internal node type of a binary tree.
@@ -28,16 +29,21 @@ func NewBinaryTree() (b *BinaryTree, err error) {
 }
 
 // Add a new URL to the binary tree.
-func (b *BinaryTree) AddURL(url *url.URL) (result string, err error) {
+func (b *BinaryTree) AddURL(url *url.URL) (err error) {
 	return b.addRecursive(&(b.root), url.String())
 }
 
 // A recursive adding function that adds a key string to the binary tree.
-func (b *BinaryTree) addRecursive(p **binaryNode, key string) (result string, err error) {
+func (b *BinaryTree) addRecursive(p **binaryNode, key string) (err error) {
 	if (*p) == nil {
-		b.urls = append(b.urls, key)
+		var c *string
+		c, err = b.urls.addNode(key)
+		if err != nil {
+			return
+		}
 		(*p) = new(binaryNode)
-		(*p).label = &(b.urls[len(b.urls)-1])
+		(*p).label = c
+		fmt.Printf("url size: %d - node: %s\n", b.urls.size(), *((*p).label))
 	} else {
 		comp := bytes.Compare([]byte(key), []byte(*((*p).label)))
 		if comp == -1 {
