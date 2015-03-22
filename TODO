@@ -1,0 +1,7 @@
+         sprinter/crawl.go: // TODO change urllist to our custom type
+      sprinter/sprinter.go: // TODO split into cmd/ and lib package
+     tree/fragment_tree.go: // TODO implement tokenization errors
+     tree/fragment_tree.go: // TODO implement fragmenttree errors
+tree/fragment_tree_test.go: // TODO add examples in a new file
+           tree/urllist.go: // TODO maybe change package name to something more general than tree
+           tree/urllist.go: // TODO add benchmarks
