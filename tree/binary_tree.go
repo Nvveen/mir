@@ -13,7 +13,7 @@ import (
 // for sorted storage of urls.
 type BinaryTree struct {
 	root *binaryNode
-	urls linkedList
+	urls LinkedList
 }
 
 // A binaryNode is the internal node type of a binary tree.
@@ -37,13 +37,13 @@ func (b *BinaryTree) AddURL(url *url.URL) (err error) {
 func (b *BinaryTree) addRecursive(p **binaryNode, key string) (err error) {
 	if (*p) == nil {
 		var c *string
-		c, err = b.urls.addNode(key)
+		c, err = b.urls.AddNode(key)
 		if err != nil {
 			return
 		}
 		(*p) = new(binaryNode)
 		(*p).label = c
-		fmt.Printf("url size: %d - node: %s\n", b.urls.size(), *((*p).label))
+		fmt.Printf("url size: %d - node: %s\n", b.urls.Size(), *((*p).label))
 	} else {
 		comp := bytes.Compare([]byte(key), []byte(*((*p).label)))
 		if comp == -1 {

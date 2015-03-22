@@ -2,7 +2,9 @@ package tree
 
 import "errors"
 
-type linkedList struct {
+// TODO priority: fix tests, add comments
+
+type LinkedList struct {
 	begin *linkedListNode
 	end   *linkedListNode
 }
@@ -12,7 +14,7 @@ type linkedListNode struct {
 	next *linkedListNode
 }
 
-func (l *linkedList) getNode(i int) (result *string) {
+func (l *LinkedList) GetNode(i int) (result *string) {
 	defer func() {
 		if err := recover(); err != nil {
 			panic(errors.New("invalid index in linked list"))
@@ -25,7 +27,7 @@ func (l *linkedList) getNode(i int) (result *string) {
 	return &(p.el)
 }
 
-func (l *linkedList) addNode(key string) (result *string, err error) {
+func (l *LinkedList) AddNode(key string) (result *string, err error) {
 	c := new(linkedListNode)
 	c.el = key
 	result = &(c.el)
@@ -36,7 +38,7 @@ func (l *linkedList) addNode(key string) (result *string, err error) {
 	return
 }
 
-func (l *linkedList) size() (s int) {
+func (l *LinkedList) Size() (s int) {
 	var p *linkedListNode
 	s = -1
 	for p = l.begin; p != nil; p = p.next {
