@@ -2,7 +2,7 @@ package sprinter_test
 
 import (
 	"fmt"
-	"mir/sprinter"
+	"github.com/Nvveen/mir/sprinter"
 	"testing"
 )
 

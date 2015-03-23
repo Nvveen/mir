@@ -48,8 +48,8 @@ func TestLinkedList_GetNode(t *testing.T) {
 			t.Fatal(errRetrieve)
 		}
 	}()
-	if *(l.GetNode(0)) != "http://www.google.com/" {
-		t.Fatal(errInvalidString)
+	if *(l.GetNode(0)) != "http://www.google.com" {
+		t.Fatal(errInvalidString, *(l.GetNode(0)))
 	}
 	if *(l.GetNode(1)) != "http://www.liacs.nl" {
 		t.Fatal(errInvalidString)

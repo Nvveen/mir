@@ -2,7 +2,6 @@ package tree
 
 import (
 	"bytes"
-	"fmt"
 	"net/url"
 )
 
@@ -43,7 +42,6 @@ func (b *BinaryTree) addRecursive(p **binaryNode, key string) (err error) {
 		}
 		(*p) = new(binaryNode)
 		(*p).label = c
-		fmt.Printf("url size: %d - node: %s\n", b.urls.Size(), *((*p).label))
 	} else {
 		comp := bytes.Compare([]byte(key), []byte(*((*p).label)))
 		if comp == -1 {

@@ -8,17 +8,6 @@ import (
 
 // TODO add examples in a new file
 
-func printTokens(t *testing.T, toks []string) {
-	str := "{"
-	for i := range toks {
-		str += toks[i]
-		if i < len(toks)-1 {
-			str += ","
-		}
-	}
-	t.Log(str, "}")
-}
-
 func TestTokenizeURL(t *testing.T) {
 	u, err := url.Parse("http://www.google.com/?q=1&q=twee&p=wat")
 	if err != nil {
@@ -30,14 +19,10 @@ func TestTokenizeURL(t *testing.T) {
 	}
 	compare := []string{"www", "google", "com", "q", "1", "twee", "p", "wat"}
 	if len(words) != len(compare) {
-		printTokens(t, words)
-		printTokens(t, compare)
 		t.Fatal("URL Tokenize: Invalid tokenization result")
 	}
 	for i := range words {
 		if words[i] != compare[i] {
-			printTokens(t, words)
-			printTokens(t, compare)
 			t.Fatal("URL Tokenize: Invalid tokenization result")
 		}
 	}

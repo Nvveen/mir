@@ -2,9 +2,8 @@ package tree
 
 import "errors"
 
-// TODO priority: fix tests, add comments
-
 type LinkedList struct {
+	size  int
 	begin *linkedListNode
 	end   *linkedListNode
 }
@@ -33,16 +32,15 @@ func (l *LinkedList) AddNode(key string) (result *string, err error) {
 	result = &(c.el)
 	if l.begin == nil {
 		l.begin = c
+		l.end = c
+	} else {
+		l.end.next = c
+		l.end = c
 	}
-	l.end = c
+	l.size++
 	return
 }
 
 func (l *LinkedList) Size() (s int) {
-	var p *linkedListNode
-	s = -1
-	for p = l.begin; p != nil; p = p.next {
-		s++
-	}
-	return s
+	return l.size
 }
