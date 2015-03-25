@@ -1,21 +1,16 @@
 package tree
 
-import "testing"
-
-type llTestError struct {
-	err string
-}
-
-var (
-	errAddNode       = llTestError{err: "failed to add node"}
-	errRetrieve      = llTestError{err: "failed to retrieve node"}
-	errInvalidString = llTestError{err: "invalid string retrieved in linked list"}
-	errInvalidSize   = llTestError{err: "invalid size for linked list"}
+import (
+	"errors"
+	"testing"
 )
 
-func (l llTestError) Error() string {
-	return "Linked list error: " + l.err
-}
+var (
+	errAddNode       = errors.New("failed to add node")
+	errRetrieve      = errors.New("failed to retrieve node")
+	errInvalidString = errors.New("invalid string retrieved in linked list")
+	errInvalidSize   = errors.New("invalid size for linked list")
+)
 
 func makeLinkedList(t *testing.T) *LinkedList {
 	l := &LinkedList{}

@@ -2,7 +2,8 @@ package tree
 
 import "bytes"
 
-// TODO add type specific errors, including to testing
+// TODO maybe change package name to something more general than tree
+// TODO add benchmarks
 
 // BinaryTree is an object that uses internal structures to allow
 // for sorted storage of urls.

@@ -5,6 +5,11 @@ import (
 	"testing"
 )
 
+var (
+	errTreeError = errors.New("Invalid tree error returned")
+	errURLFail   = errors.New("Failed to add URL")
+)
+
 func TestNewBinaryTree(t *testing.T) {
 	_, err := NewBinaryTree()
 	if err != nil {
@@ -15,7 +20,7 @@ func TestNewBinaryTree(t *testing.T) {
 func TestBinaryTree_AddURL(t *testing.T) {
 	defer func() {
 		if err := recover(); err != nil {
-			t.Fatal("Failed to add url")
+			t.Fatal(errURLFail)
 		}
 	}()
 	b, err := NewBinaryTree()
@@ -41,12 +46,12 @@ func TestBinaryTree_AddURL(t *testing.T) {
 	}
 
 	if *(b.root.label) != "http://www.google.com/" {
-		t.Fatal(errors.New("Failed to add url"), urls[0])
+		t.Fatal(errURLFail)
 	}
 	if *(b.root.right.label) != "http://www.liacs.nl/" {
-		t.Fatal(errors.New("Failed to add url"), urls[1])
+		t.Fatal(errURLFail)
 	}
 	if *(b.root.left.label) != "http://www.bing.com/" {
-		t.Fatal(errors.New("Failed to add url"), urls[2])
+		t.Fatal(errURLFail)
 	}
 }

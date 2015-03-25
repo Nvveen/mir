@@ -2,6 +2,8 @@ package tree
 
 import "errors"
 
+// deprecated
+
 type LinkedList struct {
 	size  int
 	begin *linkedListNode

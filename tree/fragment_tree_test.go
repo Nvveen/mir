@@ -8,6 +8,11 @@ import (
 
 // TODO add examples in a new file
 
+var (
+	errInvalidTokenization = errors.New("URL Tokenize: Invalid tokenization result")
+	errInvalidTree         = errors.New("Invalid fragment tree")
+)
+
 func TestTokenizeURL(t *testing.T) {
 	u, err := url.Parse("http://www.google.com/?q=1&q=twee&p=wat")
 	if err != nil {
@@ -19,11 +24,11 @@ func TestTokenizeURL(t *testing.T) {
 	}
 	compare := []string{"www", "google", "com", "q", "1", "twee", "p", "wat"}
 	if len(words) != len(compare) {
-		t.Fatal("URL Tokenize: Invalid tokenization result")
+		t.Fatal(errInvalidTokenization)
 	}
 	for i := range words {
 		if words[i] != compare[i] {
-			t.Fatal("URL Tokenize: Invalid tokenization result")
+			t.Fatal(errInvalidTokenization)
 		}
 	}
 }
@@ -58,7 +63,7 @@ func TestFragmentTree_AddURL(t *testing.T) {
 	}
 	assert := func(condition bool) {
 		if !condition {
-			t.Fatal(errors.New("Invalid fragment tree"))
+			t.Fatal(errInvalidTree)
 		}
 	}
 	assert(f.root != nil && f.root.label == "")

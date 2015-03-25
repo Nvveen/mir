@@ -2,15 +2,18 @@ package tree
 
 import (
 	"errors"
-	"net/url"
 	"testing"
+)
+
+var (
+	errURLAdd = errors.New("Adding URLs to URLList failed")
 )
 
 func makeTestList(t *testing.T) URLList {
 	l := NewURLList()
-	str := []*url.URL{
-		&url.URL{Scheme: "http", Host: "www.google.com", Path: "/"},
-		&url.URL{Scheme: "http", Host: "www.liacs.nl", Path: "/"},
+	str := []string{
+		"http://www.google.com/",
+		"http://www.liacs.nl/",
 	}
 	err := l.AddURL(str[0])
 	if err != nil {
@@ -24,14 +27,14 @@ func makeTestList(t *testing.T) URLList {
 }
 
 func TestURLList_AddURL(t *testing.T) {
-	str := []*url.URL{
-		&url.URL{Scheme: "http", Host: "www.google.com", Path: "/"},
-		&url.URL{Scheme: "http", Host: "www.liacs.nl", Path: "/"},
+	str := []string{
+		"http://www.google.com/",
+		"http://www.liacs.nl/",
 	}
 	l := makeTestList(t)
 	for i := range str {
-		if str[i].String() != l[i].String() {
-			t.Fatal(errors.New("Adding URLS to URLList failure"))
+		if str[i] != l[i] {
+			t.Fatal(errURLAdd)
 		}
 	}
 }
@@ -42,7 +45,7 @@ func TestURLList_GetURL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if url.String() != "http://www.google.com/" {
-		t.Fatal(errors.New("Invalid URL retrieve from URLList"), ":", url)
+	if url != "http://www.google.com/" {
+		t.Fatal(errURLAdd)
 	}
 }

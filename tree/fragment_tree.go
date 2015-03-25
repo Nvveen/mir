@@ -6,9 +6,6 @@ import (
 	"strings"
 )
 
-// TODO implement tokenization errors
-// TODO implement fragmenttree errors
-
 // The data structure that allows for lower storage requirements by
 // fragmenting urls and storing each fragment as a key. For this to be
 // succesfull, a large number of links need to stored (compared to a
@@ -16,6 +13,10 @@ import (
 type FragmentTree struct {
 	root *fragmentNode
 }
+
+var (
+	ErrTokenizer = errors.New("NewURL Tokenizer: Not a simple URL")
+)
 
 // A simple node structure used by the FragmentTree data structure.
 type fragmentNode struct {
@@ -65,7 +66,7 @@ func (f *FragmentTree) AddURL(url *url.URL) (err error) {
 // Tokenize an URL into separate alphanumeric words for indexing purposes.
 func TokenizeURL(url *url.URL) (tok []string, err error) {
 	if url.User != nil || len(url.Opaque) > 0 {
-		err = errors.New("URL Tokenizer: Not a simple URL")
+		err = ErrTokenizer
 		return
 	}
 	tok = append(tok, strings.Split(url.Host, ".")...)
