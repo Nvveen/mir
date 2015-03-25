@@ -1,8 +1,7 @@
-package tree
+package containers
 
 import "bytes"
 
-// TODO maybe change package name to something more general than tree
 // TODO add benchmarks
 
 // BinaryTree is an object that uses internal structures to allow
