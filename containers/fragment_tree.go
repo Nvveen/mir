@@ -63,6 +63,13 @@ func (f *FragmentTree) AddNode(url *url.URL) (err error) {
 	return
 }
 
+func (f *FragmentTree) GetUrl(i int) (result string, err error) {
+	// TODO add string of fragment parts to an internal list, use
+	// fragment tree to point to each fragment, but calculate the
+	// extra overhead
+	return
+}
+
 // Tokenize an URL into separate alphanumeric words for indexing purposes.
 func TokenizeURL(url *url.URL) (tok []string, err error) {
 	if url.User != nil || len(url.Opaque) > 0 {
