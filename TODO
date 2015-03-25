@@ -4,8 +4,8 @@ tree/fragment_tree.go:// TODO implement tokenization errors
 tree/fragment_tree.go:// TODO implement fragmenttree errors
 tree/fragment_tree_test.go:// TODO add examples in a new file
 tree/binary_tree.go:// TODO change all url calls to just strings
+tree/binary_tree.go:// TODO change method names
 tree/binary_tree.go:// TODO add type specific errors, including to testing
 tree/urllist.go:// TODO maybe change package name to something more general than tree
 tree/urllist.go:// TODO add benchmarks
 tree/urllist.go:// TODO add URLList errors
-tree/linked_list.go:// TODO priority: fix tests, add comments
