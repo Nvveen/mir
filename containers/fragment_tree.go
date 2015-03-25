@@ -31,7 +31,7 @@ func NewFragmentTree() (t *FragmentTree, err error) {
 
 // Add a url by fragmenting it and using each fragment as a key in
 // a tree.
-func (f *FragmentTree) AddURL(url *url.URL) (err error) {
+func (f *FragmentTree) AddNode(url *url.URL) (err error) {
 	words, err := TokenizeURL(url)
 	if err != nil {
 		return

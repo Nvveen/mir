@@ -49,7 +49,7 @@ func TestFragmentTree_AddURL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = f.AddURL(u)
+	err = f.AddNode(u)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +57,7 @@ func TestFragmentTree_AddURL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = f.AddURL(u)
+	err = f.AddNode(u)
 	if err != nil {
 		t.Fatal(err)
 	}

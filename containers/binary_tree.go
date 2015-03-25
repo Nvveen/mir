@@ -1,8 +1,12 @@
 package containers
 
-import "bytes"
+import (
+	"bytes"
+	"errors"
+)
 
 // TODO add benchmarks
+// TODO centralize errors/maak beter duildelijk welke errors waar horen
 
 // BinaryTree is an object that uses internal structures to allow
 // for sorted storage of urls.
@@ -16,6 +20,10 @@ type binaryNode struct {
 	label       *string
 	left, right *binaryNode
 }
+
+var (
+	ErrInvalidIndex = errors.New("Invalid index in BinaryTree")
+)
 
 // Add a new binary tree with an internal linked list.
 func NewBinaryTree() (b *BinaryTree, err error) {
@@ -44,4 +52,14 @@ func (b *BinaryTree) addRecursive(p **binaryNode, key string) (err error) {
 		}
 	}
 	return
+}
+
+func (b *BinaryTree) GetNode(i int) (result string, err error) {
+	defer func() {
+		if vErr := recover(); vErr != nil {
+			result = ""
+			err = ErrInvalidIndex
+		}
+	}()
+	return b.nodes[i], nil
 }

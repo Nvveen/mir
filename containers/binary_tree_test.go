@@ -6,8 +6,10 @@ import (
 )
 
 var (
-	errTreeError = errors.New("Invalid tree error returned")
-	errURLFail   = errors.New("Failed to add URL")
+	errTreeError      = errors.New("Invalid tree")
+	errURLFail        = errors.New("Failed to add URL")
+	errInvalidError   = errors.New("Invalid error returned")
+	errInvalidElement = errors.New("Invalid element from tree")
 )
 
 func TestNewBinaryTree(t *testing.T) {
@@ -17,12 +19,7 @@ func TestNewBinaryTree(t *testing.T) {
 	}
 }
 
-func TestBinaryTree_AddURL(t *testing.T) {
-	defer func() {
-		if err := recover(); err != nil {
-			t.Fatal(errURLFail)
-		}
-	}()
+func makeBinaryTree(t *testing.T) *BinaryTree {
 	b, err := NewBinaryTree()
 	if err != nil {
 		t.Fatal(err)
@@ -44,6 +41,16 @@ func TestBinaryTree_AddURL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	return b
+}
+
+func TestBinaryTree_AddURL(t *testing.T) {
+	defer func() {
+		if err := recover(); err != nil {
+			t.Fatal(errURLFail)
+		}
+	}()
+	b := makeBinaryTree(t)
 
 	if *(b.root.label) != "http://www.google.com/" {
 		t.Fatal(errURLFail)
@@ -53,5 +60,27 @@ func TestBinaryTree_AddURL(t *testing.T) {
 	}
 	if *(b.root.left.label) != "http://www.bing.com/" {
 		t.Fatal(errURLFail)
+	}
+}
+
+func TestBinaryTree_GetNode(t *testing.T) {
+	b := makeBinaryTree(t)
+	result, err := b.GetNode(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result != "http://www.google.com/" {
+		t.Fatal(errInvalidElement)
+	}
+	result, err = b.GetNode(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result != "http://www.liacs.nl/" {
+		t.Fatal(err)
+	}
+	result, err = b.GetNode(3) // does not exist
+	if err != ErrInvalidIndex {
+		t.Fatal(errInvalidError)
 	}
 }
