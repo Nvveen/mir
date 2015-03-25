@@ -6,8 +6,6 @@ import (
 	"os"
 )
 
-// TODO split into cmd/ and lib package
-
 var (
 	Info  *log.Logger
 	Error *log.Logger
