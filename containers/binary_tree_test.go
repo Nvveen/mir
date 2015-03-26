@@ -29,16 +29,19 @@ func makeBinaryTree(t *testing.T) *BinaryTree {
 		"http://www.liacs.nl/",
 		"http://www.bing.com/",
 	}
-	err = b.AddNode(urls[0])
+	node, err := b.AddNode(urls[0])
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = b.AddNode(urls[1])
-	if err != nil {
+	if node == nil || *node != urls[0] {
+		t.Fatal(errInvalidElement)
+	}
+	node, err = b.AddNode(urls[1])
+	if err != nil || node == nil || *node != urls[1] {
 		t.Fatal(err)
 	}
-	err = b.AddNode(urls[2])
-	if err != nil {
+	node, err = b.AddNode(urls[2])
+	if err != nil || node == nil || *node != urls[2] {
 		t.Fatal(err)
 	}
 	return b
@@ -69,14 +72,14 @@ func TestBinaryTree_GetNode(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result != "http://www.google.com/" {
+	if *result != "http://www.google.com/" {
 		t.Fatal(errInvalidElement)
 	}
 	result, err = b.GetNode(1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result != "http://www.liacs.nl/" {
+	if *result != "http://www.liacs.nl/" {
 		t.Fatal(err)
 	}
 	result, err = b.GetNode(3) // does not exist
