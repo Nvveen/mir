@@ -13,14 +13,14 @@ var (
 )
 
 func TestNewBinaryTree(t *testing.T) {
-	_, err := NewBinaryTree()
+	_, err := NewBinaryTree(&List{})
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func makeBinaryTree(t *testing.T) *BinaryTree {
-	b, err := NewBinaryTree()
+	b, err := NewBinaryTree(&List{})
 	if err != nil {
 		t.Fatal(err)
 	}

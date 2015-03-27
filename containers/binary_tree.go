@@ -25,10 +25,10 @@ var (
 	ErrInvalidIndex = errors.New("Invalid index in BinaryTree")
 )
 
-// Add a new binary tree with an internal linked list.
-func NewBinaryTree() (b *BinaryTree, err error) {
+// Add a new binary tree with a backing container.
+func NewBinaryTree(con Container) (b *BinaryTree, err error) {
 	b = new(BinaryTree)
-	b.nodes = &List{}
+	b.nodes = con
 	return
 }
 
