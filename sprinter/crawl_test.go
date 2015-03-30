@@ -1,9 +1,9 @@
 package sprinter
 
 import (
-	"fmt"
-	"github.com/Nvveen/mir/containers"
 	"testing"
+
+	"github.com/Nvveen/mir/containers"
 )
 
 // TODO move all test make-objects to a single generator function
