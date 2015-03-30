@@ -1,27 +1,31 @@
-package sprinter_test
+package sprinter
 
 import (
 	"fmt"
-	"github.com/Nvveen/mir/sprinter"
+	"github.com/Nvveen/mir/containers"
 	"testing"
 )
 
+// TODO move all test make-objects to a single generator function
+
 func TestNewCrawler(t *testing.T) {
-	_, err := sprinter.NewCrawler()
+	l := &containers.List{}
+	_, err := NewCrawler(l)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := containers.NewBinaryTree(&containers.List{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = NewCrawler(b)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func TestNewCrawlerError(t *testing.T) {
-	c := sprinter.NewCrawlerError("test error")
-	if c.Error() != "Crawler: test error" {
-		t.Fatal("Invalid CrawlerError")
-	}
-}
-
 func TestSetURL(t *testing.T) {
-	c, err := sprinter.NewCrawler()
+	c, err := NewCrawler(&containers.List{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,7 +36,7 @@ func TestSetURL(t *testing.T) {
 }
 
 func TestCrawler_GetURL(t *testing.T) {
-	c, err := sprinter.NewCrawler()
+	c, err := NewCrawler(&containers.List{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,13 +48,13 @@ func TestCrawler_GetURL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.String() != "http://www.google.com" {
+	if result != "http://www.google.com" {
 		t.Fatal("invalid URL returned")
 	}
 }
 
 func ExampleCrawler_GetURL() {
-	c, err := sprinter.NewCrawler()
+	c, err := NewCrawler(&containers.List{})
 	if err != nil {
 		return
 	}
@@ -65,7 +69,7 @@ func ExampleCrawler_GetURL() {
 }
 
 func TestRetrieveHTML(t *testing.T) {
-	c, err := sprinter.NewCrawler()
+	c, err := NewCrawler(&containers.List{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +83,7 @@ func TestRetrieveHTML(t *testing.T) {
 }
 
 func ExampleCrawler_RetrieveHTML(t *testing.T) {
-	c, err := sprinter.NewCrawler()
+	c, err := NewCrawler(&containers.List{})
 	if err != nil {
 		return
 	}
@@ -92,7 +96,7 @@ func ExampleCrawler_RetrieveHTML(t *testing.T) {
 }
 
 func TestCrawler_ExtractInfo(t *testing.T) {
-	c, err := sprinter.NewCrawler()
+	c, err := NewCrawler(&containers.List{})
 	if err != nil {
 		t.Fatal(err)
 	}

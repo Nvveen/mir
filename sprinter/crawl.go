@@ -1,72 +1,66 @@
 package sprinter
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 
+	"github.com/Nvveen/mir/containers"
 	"golang.org/x/net/html"
 )
-
-// TODO change urllist to our custom type
 
 // A web crawler structure that stores information on what pages
 // it visits.
 type Crawler struct {
-	urlList []*url.URL
+	urlList containers.Container
 }
 
-// A web crawler error type.
-type CrawlerError struct {
-	err string
-}
-
-// Construct a new crawler error.
-func NewCrawlerError(err string) (c CrawlerError) {
-	c.err = err
-	return
-}
-
-// Error reports an error.
-func (c CrawlerError) Error() string {
-	return "Crawler: " + c.err
-}
+var (
+	ErrAddURL         = errors.New("unable to add URL")
+	ErrNewCrawler     = errors.New("failed to make a Crawler object")
+	ErrInvalidElement = errors.New("invalid element in container")
+)
 
 // Construct a new web crawler.
-func NewCrawler() (c Crawler, err error) {
+func NewCrawler(con containers.Container) (c Crawler, err error) {
 	defer func() {
 		if lErr := recover(); lErr != nil {
-			err = NewCrawlerError("Failed to make a Crawler object")
+			err = ErrNewCrawler
 			c = Crawler{}
 		}
 	}()
+	c.urlList = con
 	return
 }
 
 // Add the internal base url to start crawling from.
 func (c *Crawler) AddURL(URL string) (err error) {
-	var parsedUrl *url.URL
-	parsedUrl, err = url.Parse(URL)
+	node, err := c.urlList.AddNode(URL)
 	if err != nil {
-		return
+		return err
 	}
-	c.urlList = append(c.urlList, parsedUrl)
+	if node == nil {
+		return ErrAddURL
+	}
 	return
 }
 
 // Retrieve a url from the crawler's list by index.
-func (c *Crawler) GetURL(i int) (ret *url.URL, err error) {
+func (c *Crawler) GetURL(i int) (ret string, err error) {
 	defer func() {
 		if err := recover(); err != nil {
-			err = NewCrawlerError("Invalid element in url list")
+			err = ErrInvalidElement
 			c = nil
 		}
 	}()
-	ret = c.urlList[i]
-	if ret == nil {
-		err = CrawlerError{err: "Invalid element in url list"}
+	val, err := c.urlList.GetNode(i)
+	if err != nil {
+		return "", err
 	}
-	return
+	if val == nil {
+		return "", ErrInvalidElement
+	}
+	return *val, err
 }
 
 // Retrieve the HTML content of a url with index i in the Crawler.
@@ -75,7 +69,7 @@ func (c *Crawler) RetrieveHTML(i int) (result string, err error) {
 	if err != nil {
 		return
 	}
-	resp, err := http.Get(url.String())
+	resp, err := http.Get(url)
 	if err != nil {
 		return
 	}
@@ -91,7 +85,7 @@ func (c *Crawler) ExtractInfo(i int) (err error) {
 	if err != nil {
 		return
 	}
-	resp, err := http.Get(url.String())
+	resp, err := http.Get(url)
 	if err != nil {
 		return
 	}

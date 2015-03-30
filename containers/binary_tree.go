@@ -68,3 +68,7 @@ func (b *BinaryTree) GetNode(i int) (result *string, err error) {
 	}()
 	return b.nodes.GetNode(i)
 }
+
+func (b *BinaryTree) Size() int {
+	return b.nodes.Size()
+}
