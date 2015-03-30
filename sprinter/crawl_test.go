@@ -53,21 +53,6 @@ func TestCrawler_GetURL(t *testing.T) {
 	}
 }
 
-func ExampleCrawler_GetURL() {
-	c, err := NewCrawler(&containers.List{})
-	if err != nil {
-		return
-	}
-	c.AddURL("http://www.google.com")
-	result, err := c.GetURL(0)
-	if err != nil {
-		return
-	}
-	fmt.Print(result)
-	// Output:
-	// http://www.google.com
-}
-
 func TestRetrieveHTML(t *testing.T) {
 	c, err := NewCrawler(&containers.List{})
 	if err != nil {
@@ -80,19 +65,6 @@ func TestRetrieveHTML(t *testing.T) {
 	} else if len(result) == 0 {
 		t.Fatal("no response from http://www.google.com")
 	}
-}
-
-func ExampleCrawler_RetrieveHTML(t *testing.T) {
-	c, err := NewCrawler(&containers.List{})
-	if err != nil {
-		return
-	}
-	c.AddURL("http://www.google.com")
-	result, err := c.RetrieveHTML(0)
-	if err != nil {
-		return
-	}
-	fmt.Printf("%s\n", result)
 }
 
 func TestCrawler_ExtractInfo(t *testing.T) {
