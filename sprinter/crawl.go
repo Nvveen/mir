@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 
 	"github.com/Nvveen/mir/containers"
 	"golang.org/x/net/html"
@@ -81,11 +82,23 @@ func (c *Crawler) RetrieveHTML(i int) (result string, err error) {
 
 // The main function that extracts various information for a url and its page.
 func (c *Crawler) ExtractInfo(i int) (err error) {
-	url, err := c.GetURL(i)
+	u, err := c.GetURL(i)
 	if err != nil {
 		return
 	}
-	resp, err := http.Get(url)
+	// Tokenize url and build index
+	parsed_url, err := url.Parse(u)
+	if err != nil {
+		return
+	}
+	urls, err := containers.TokenizeURL(parsed_url)
+	if err != nil {
+		return
+	}
+	_ = urls
+	// for i, u := range urls {
+	// }
+	resp, err := http.Get(u)
 	if err != nil {
 		return
 	}
