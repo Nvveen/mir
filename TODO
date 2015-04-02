@@ -1,3 +1,5 @@
-containers/fragment_tree_test.go:// TODO add examples in a new file
 containers/binary_tree.go:// TODO add benchmarks
-sprinter/crawl.go:// TODO change urllist to our custom type
+containers/binary_tree.go:// TODO centralize errors/maak beter duildelijk welke errors waar horen
+containers/fragment_tree.go:	// TODO add string of fragment parts to an internal list, use
+containers/fragment_tree_test.go:// TODO add examples in a new file
+sprinter/crawl_test.go:// TODO move all test make-objects to a single generator function

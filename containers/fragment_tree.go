@@ -6,23 +6,25 @@ import (
 	"strings"
 )
 
-// The data structure that allows for lower storage requirements by
-// fragmenting urls and storing each fragment as a key. For this to be
-// succesfull, a large number of links need to stored (compared to a
-// simple string list.
-type FragmentTree struct {
-	root *fragmentNode
-}
+type (
+	// The data structure that allows for lower storage requirements by
+	// fragmenting urls and storing each fragment as a key. For this to be
+	// succesfull, a large number of links need to stored (compared to a
+	// simple string list.
+	FragmentTree struct {
+		root *fragmentNode
+	}
+
+	// A simple node structure used by the FragmentTree data structure.
+	fragmentNode struct {
+		label    string
+		children []*fragmentNode
+	}
+)
 
 var (
 	ErrTokenizer = errors.New("NewURL Tokenizer: Not a simple URL")
 )
-
-// A simple node structure used by the FragmentTree data structure.
-type fragmentNode struct {
-	label    string
-	children []*fragmentNode
-}
 
 // Make a new FragmentTree object.
 func NewFragmentTree() (t *FragmentTree, err error) {

@@ -8,18 +8,20 @@ import (
 // TODO add benchmarks
 // TODO centralize errors/maak beter duildelijk welke errors waar horen
 
-// BinaryTree is an object that uses internal structures to allow
-// for sorted storage of urls.
-type BinaryTree struct {
-	root  *binaryNode
-	nodes Container
-}
+type (
+	// BinaryTree is an object that uses internal structures to allow
+	// for sorted storage of urls.
+	BinaryTree struct {
+		root  *binaryNode
+		nodes Container
+	}
 
-// A binaryNode is the internal node type of a binary tree.
-type binaryNode struct {
-	label       *string
-	left, right *binaryNode
-}
+	// A binaryNode is the internal node type of a binary tree.
+	binaryNode struct {
+		label       *string
+		left, right *binaryNode
+	}
+)
 
 var (
 	ErrInvalidIndex = errors.New("Invalid index in BinaryTree")
