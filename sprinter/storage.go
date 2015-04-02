@@ -6,7 +6,7 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-// TODO comments overal
+// TODO change default consts to use ENV vars
 
 type ReverseIndex map[string][]string
 
@@ -18,14 +18,15 @@ type Database struct {
 }
 
 const (
-	MongoDBHost  = "127.0.0.1"
-	MongoDBPort  = "27017"
-	AuthDatabase = "test"
-	AuthUsername = "guest"
-	AuthPassword = "welcome"
-	TestDatabase = "test"
+	MongoDBHost  = "127.0.0.1" // Default host
+	MongoDBPort  = "27017"     // Default port
+	AuthDatabase = "test"      // Default database
+	AuthUsername = "testuser"  // Default user
+	AuthPassword = "welcome"   // Default password
+	TestDatabase = "test"      // Default testing database
 )
 
+// Constructs a new Database object with the default values.
 func NewDatabase() (db *Database, err error) {
 	db = &Database{
 		Host:     MongoDBHost,
@@ -37,6 +38,7 @@ func NewDatabase() (db *Database, err error) {
 	return
 }
 
+// Open a MongoDB connection.
 func (db *Database) OpenConnection() (err error) {
 	mongoDBDialInfo := &mgo.DialInfo{
 		Addrs:    []string{db.Host},
@@ -53,6 +55,7 @@ func (db *Database) OpenConnection() (err error) {
 	return
 }
 
+// Close a MongoDB connection
 func (db *Database) CloseConnection() (err error) {
 	db.session.Close()
 	return
