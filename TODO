@@ -1,5 +1,11 @@
-containers/binary_tree.go:// TODO add benchmarks
-containers/binary_tree.go:// TODO centralize errors/maak beter duildelijk welke errors waar horen
 containers/fragment_tree.go:	// TODO add string of fragment parts to an internal list, use
 containers/fragment_tree_test.go:// TODO add examples in a new file
+containers/binary_tree.go:// TODO add benchmarks
+containers/binary_tree.go:// TODO centralize errors/maak beter duildelijk welke errors waar horen
+sprinter/storage.go:// TODO change default consts to use ENV vars
+sprinter/storage.go:// TODO enhance errors
+sprinter/storage.go:// TODO fix authentication server
+sprinter/crawl.go:	// TODO Find a better solution for this
 sprinter/crawl_test.go:// TODO move all test make-objects to a single generator function
+sprinter/storage_test.go:// TODO add database/user creation
+sprinter/storage_test.go:// TODO only copy over sessions, don't initiate new connections each time
