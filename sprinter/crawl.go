@@ -86,21 +86,9 @@ func (c *Crawler) ExtractInfo(i int) (err error) {
 	if err != nil {
 		return
 	}
-	// Tokenize url and build index
-	parsed_url, err := url.Parse(u)
-	if err != nil {
-		return
-	}
-	urls, err := containers.TokenizeURL(parsed_url)
-	if err != nil {
-		return
-	}
-	_ = urls
-	// for i, u := range urls {
-	// }
 	resp, err := http.Get(u)
 	if err != nil {
-		return
+		return err
 	}
 	doc, err := html.Parse(resp.Body)
 	if err != nil {
@@ -125,5 +113,21 @@ func (c *Crawler) ExtractInfo(i int) (err error) {
 		return
 	}
 	walker(doc)
+	return
+}
+
+func (c *Crawler) IndexURL(u string) (err error) {
+	parsed_url, err := url.Parse(u)
+	if err != nil {
+		return
+	}
+	urls, err := containers.TokenizeURL(parsed_url)
+	if err != nil {
+		return
+	}
+	for i := range urls {
+		// writeIndex(urls[i], u)
+		_ = i
+	}
 	return
 }
