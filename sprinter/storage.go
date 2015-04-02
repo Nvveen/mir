@@ -4,17 +4,27 @@ import (
 	"time"
 
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // TODO change default consts to use ENV vars
+// TODO enhance errors
+// TODO fix authentication server
 
-type ReverseIndex map[string][]string
+// A reverse index representation of a bson MongoDB object.
+type ReverseIndex struct {
+	ID  bson.ObjectId `bson:"_id,omitempty"`
+	Key string        `bson:"key"`
+	// URLs are a list for now, eventually each will be a (weighted) element
+	// so a proper index ranking can be made
+	URLs []string `bson:"urls"`
+}
 
 type Database struct {
-	Host, Port             string
-	Database, TestDatabase string
-	Username, Password     string
-	session                *mgo.Session
+	Host, Port         string
+	Database           string
+	Username, Password string
+	session            *mgo.Session
 }
 
 const (
@@ -23,19 +33,17 @@ const (
 	AuthDatabase = "test"      // Default database
 	AuthUsername = "testuser"  // Default user
 	AuthPassword = "welcome"   // Default password
-	TestDatabase = "test"      // Default testing database
 )
 
 // Constructs a new Database object with the default values.
-func NewDatabase() (db *Database, err error) {
-	db = &Database{
+func NewDatabase() *Database {
+	return &Database{
 		Host:     MongoDBHost,
 		Port:     MongoDBPort,
 		Database: AuthDatabase,
 		Username: AuthUsername,
 		Password: AuthPassword,
 	}
-	return
 }
 
 // Open a MongoDB connection.
@@ -56,7 +64,24 @@ func (db *Database) OpenConnection() (err error) {
 }
 
 // Close a MongoDB connection
-func (db *Database) CloseConnection() (err error) {
+func (db *Database) CloseConnection() {
 	db.session.Close()
+}
+
+// Insert a new index record into the database.
+func (db *Database) InsertRecord(key string, url string, collection string) (err error) {
+	sessionCopy := db.session.Copy()
+	defer sessionCopy.Close()
+	c := sessionCopy.DB(db.Database).C(collection)
+
+	change := bson.M{"$addToSet": bson.M{"urls": &url}}
+	err = c.Update(bson.M{"key": key}, change)
+	if err == mgo.ErrNotFound {
+		err = c.Insert(ReverseIndex{Key: key, URLs: []string{url}})
+		if err != nil {
+			return
+		}
+		err = nil
+	}
 	return
 }

@@ -7,12 +7,12 @@ import (
 	"net/url"
 
 	"github.com/Nvveen/mir/containers"
-	"golang.org/x/net/html"
 )
 
 // A web crawler structure that stores information on what pages
 // it visits.
 type Crawler struct {
+	DB      *Database
 	urlList containers.Container
 }
 
@@ -31,6 +31,12 @@ func NewCrawler(con containers.Container) (c Crawler, err error) {
 		}
 	}()
 	c.urlList = con
+	c.DB = NewDatabase()
+	// TODO Find a better solution for this
+	c.DB.Database = "gotest"
+	c.DB.Username = "gotestuser"
+	c.DB.Password = "welcome"
+	err = c.DB.OpenConnection()
 	return
 }
 
@@ -88,31 +94,36 @@ func (c *Crawler) ExtractInfo(i int) (err error) {
 	}
 	resp, err := http.Get(u)
 	if err != nil {
-		return err
+		return
 	}
-	doc, err := html.Parse(resp.Body)
+	err = c.IndexURL(u)
 	if err != nil {
 		return
 	}
-	var walker func(*html.Node) error
-	walker = func(n *html.Node) (err error) {
-		// Extract links
-		if n.Type == html.ElementNode && n.Data == "a" {
-			for i := range n.Attr {
-				if n.Attr[i].Key == "href" {
-					err = c.AddURL(n.Attr[i].Val)
-					if err != nil {
-						return err
-					}
-				}
-			}
-		}
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			walker(c)
-		}
-		return
-	}
-	walker(doc)
+	_ = resp
+	// doc, err := html.Parse(resp.Body)
+	// if err != nil {
+	// 	return
+	// }
+	// var walker func(*html.Node) error
+	// walker = func(n *html.Node) (err error) {
+	// 	// Extract links
+	// 	if n.Type == html.ElementNode && n.Data == "a" {
+	// 		for i := range n.Attr {
+	// 			if n.Attr[i].Key == "href" {
+	// 				err = c.AddURL(n.Attr[i].Val)
+	// 				if err != nil {
+	// 					return err
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// 	for c := n.FirstChild; c != nil; c = c.NextSibling {
+	// 		walker(c)
+	// 	}
+	// 	return
+	// }
+	// walker(doc)
 	return
 }
 
@@ -126,8 +137,7 @@ func (c *Crawler) IndexURL(u string) (err error) {
 		return
 	}
 	for i := range urls {
-		// writeIndex(urls[i], u)
-		_ = i
+		c.DB.InsertRecord(urls[i], u, "urlindex")
 	}
 	return
 }
