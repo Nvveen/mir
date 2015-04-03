@@ -2,11 +2,13 @@ package sprinter
 
 import (
 	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 
 	"github.com/Nvveen/mir/containers"
+	"golang.org/x/net/html"
 )
 
 // A web crawler structure that stores information on what pages
@@ -96,6 +98,7 @@ func (c *Crawler) ExtractInfo(i int) (err error) {
 	if err != nil {
 		return
 	}
+	defer resp.Body.Close()
 	err = c.IndexURL(u)
 	if err != nil {
 		return
@@ -139,5 +142,18 @@ func (c *Crawler) IndexURL(u string) (err error) {
 	for i := range urls {
 		c.DB.InsertRecord(urls[i], u, "urlindex")
 	}
+	return
+}
+
+func (c *Crawler) IndexLinks(body io.Reader) (err error) {
+	z := html.NewTokenizer(body)
+	for {
+		tt := z.Next()
+		if tt == html.ErrorToken {
+			// error handle
+			return
+		}
+	}
+
 	return
 }
