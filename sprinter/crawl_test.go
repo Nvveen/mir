@@ -72,6 +72,7 @@ func TestCrawler_ExtractInfo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer cleanDB(c.DB, t)
 	c.AddURL("http://www.leidenuniv.nl")
 	err = c.ExtractInfo(0)
 	if err != nil {
