@@ -7,5 +7,5 @@ sprinter/storage.go:// TODO enhance errors
 sprinter/storage.go:// TODO fix authentication server
 sprinter/crawl.go:	// TODO Find a better solution for this
 sprinter/crawl_test.go:// TODO move all test make-objects to a single generator function
+sprinter/crawl_test.go:// TODO research common testing patterns
 sprinter/storage_test.go:// TODO add database/user creation
-sprinter/storage_test.go:// TODO only copy over sessions, don't initiate new connections each time
