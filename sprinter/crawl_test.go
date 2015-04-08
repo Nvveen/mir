@@ -12,8 +12,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// TODO move all test make-objects to a single generator function
-// TODO research common testing patterns
+// TODO move other functions to use generator
 
 var (
 	errInvalidDBElement = errors.New("Invalid Database element")

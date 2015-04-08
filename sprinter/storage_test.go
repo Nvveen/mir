@@ -8,6 +8,8 @@ import (
 )
 
 // TODO add database/user creation
+// TODO restructure these errors too, especially to see if we can use
+// stub mongodb connections
 
 // We need this for disabling potential long-lasting MongoDB requests
 // because they fail to timeout
