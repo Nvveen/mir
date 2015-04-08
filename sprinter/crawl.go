@@ -1,8 +1,9 @@
 package sprinter
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -25,11 +26,11 @@ var (
 )
 
 // Construct a new web crawler.
-func NewCrawler(con containers.Container) (c Crawler, err error) {
+func NewCrawler(con containers.Container) (c *Crawler, err error) {
 	defer func() {
 		if lErr := recover(); lErr != nil {
 			err = ErrNewCrawler
-			c = Crawler{}
+			c = &Crawler{}
 		}
 	}()
 	c.urlList = con
@@ -104,29 +105,6 @@ func (c *Crawler) ExtractInfo(i int) (err error) {
 		return
 	}
 	_ = resp
-	// doc, err := html.Parse(resp.Body)
-	// if err != nil {
-	// 	return
-	// }
-	// var walker func(*html.Node) error
-	// walker = func(n *html.Node) (err error) {
-	// 	// Extract links
-	// 	if n.Type == html.ElementNode && n.Data == "a" {
-	// 		for i := range n.Attr {
-	// 			if n.Attr[i].Key == "href" {
-	// 				err = c.AddURL(n.Attr[i].Val)
-	// 				if err != nil {
-	// 					return err
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-	// 		walker(c)
-	// 	}
-	// 	return
-	// }
-	// walker(doc)
 	return
 }
 
@@ -145,13 +123,37 @@ func (c *Crawler) IndexURL(u string) (err error) {
 	return
 }
 
-func (c *Crawler) IndexLinks(body io.Reader) (err error) {
-	z := html.NewTokenizer(body)
+func (c *Crawler) IndexLinks(resp *http.Response) (err error) {
+	key := resp.Request.URL
+	sum := md5.Sum([]byte(key.String()))
+	cs := hex.EncodeToString(sum[:])
+
+	z := html.NewTokenizer(resp.Body)
 	for {
 		tt := z.Next()
-		if tt == html.ErrorToken {
-			// error handle
-			return
+		switch tt {
+		case html.ErrorToken:
+			return nil
+		case html.StartTagToken, html.EndTagToken:
+			tok := z.Token()
+			if tok.Data == "a" {
+				for i := range tok.Attr {
+					if tok.Attr[i].Key == "href" {
+						val, err := url.Parse(tok.Attr[i].Val)
+						if err != nil {
+							continue
+						}
+						if !val.IsAbs() {
+							val.Host = key.Host
+							val.Scheme = key.Scheme
+						}
+						err = c.DB.InsertRecord(cs, val.String(), "linkindex")
+						if err != nil {
+							return err
+						}
+					}
+				}
+			}
 		}
 	}
 
