@@ -35,6 +35,9 @@ func makeDB(t *testing.T) *Database {
 }
 
 func cleanDB(db *Database, t *testing.T) {
+	if db == nil || t == nil {
+		return
+	}
 	collections, err := db.session.DB("gotest").CollectionNames()
 	if err != nil {
 		t.Fatal(err)

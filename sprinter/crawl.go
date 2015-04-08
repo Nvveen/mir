@@ -33,6 +33,7 @@ func NewCrawler(con containers.Container) (c *Crawler, err error) {
 			c = &Crawler{}
 		}
 	}()
+	c = new(Crawler)
 	c.urlList = con
 	c.DB = NewDatabase()
 	// TODO Find a better solution for this

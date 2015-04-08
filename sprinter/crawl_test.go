@@ -27,6 +27,7 @@ var (
 		RawQuery: "",
 		Fragment: "",
 	}
+	link = "http://www.liacs.nl"
 
 	c *Crawler
 )
@@ -52,7 +53,7 @@ func makeCrawler(t *testing.T) (cr *Crawler) {
 		}
 		c = cr
 	}
-	return cr
+	return c
 }
 
 func compareInput(t *testing.T, c *Crawler, collection string, checks []ReverseIndex) {
@@ -64,12 +65,21 @@ func compareInput(t *testing.T, c *Crawler, collection string, checks []ReverseI
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(results) != len(checks) {
+		t.Logf("\nResults: %v\nChecks: %v", results, checks)
+		t.Fatal(errInvalidDBElement)
+	}
 	for i := range results {
 		if results[i].Key != checks[i].Key {
+			t.Logf("\n%s - %s", results[i].Key, checks[i].Key)
 			t.Fatal(errInvalidDBElement)
 		} else {
+			if len(results[i].URLs) != len(checks[i].URLs) {
+				t.Fatal(errInvalidDBElement)
+			}
 			for j := range results[i].URLs {
 				if results[i].URLs[j] != checks[i].URLs[j] {
+					t.Logf("\n%s - %s", results[i].URLs[j], checks[i].URLs[j])
 					t.Fatal(errInvalidDBElement)
 				}
 			}
@@ -166,6 +176,13 @@ func TestCrawler_ExtractInfo(t *testing.T) {
 	if len(results[0].URLs) != 1 {
 		t.Fatalf("%s: %#v", errNrURLs, results)
 	}
+
+	// c := makeCrawler(t)
+	// defer cleanDB(c.DB, t)
+	// err := c.ExtractInfo(0)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 }
 
 func TestCrawler_IndexURL(t *testing.T) {
@@ -175,6 +192,11 @@ func TestCrawler_IndexURL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	compareInput(t, c, "urlindex", []ReverseIndex{
+		ReverseIndex{Key: "www", URLs: []string{u.String()}},
+		ReverseIndex{Key: "leidenuniv", URLs: []string{u.String()}},
+		ReverseIndex{Key: "nl", URLs: []string{u.String()}},
+	})
 }
 
 func TestCrawler_IndexLinks(t *testing.T) {

@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+// TODO turn tokenization of host around (Tobias idea)
+
 type (
 	// The data structure that allows for lower storage requirements by
 	// fragmenting urls and storing each fragment as a key. For this to be
@@ -82,7 +84,7 @@ func TokenizeURL(url *url.URL) (tok []string, err error) {
 	// Split path
 	path := url.Path
 	path = strings.TrimSpace(path)
-	if path != "/" {
+	if path != "/" && path != "" {
 		if strings.HasPrefix(path, "/") {
 			path = path[1:]
 		}
