@@ -9,7 +9,10 @@ import (
 
 // TODO change default consts to use ENV vars
 // TODO enhance errors
-// TODO fix authentication server
+// TODO extend testing to setup test database, while moving every config
+// to env vars for actual usage when not testing.
+// TODO have Go start mongod, and keep it running while testing, adding users
+// and the like.
 
 // A reverse index representation of a bson MongoDB object.
 type ReverseIndex struct {

@@ -1,12 +1,13 @@
+containers/binary_tree.go:// TODO add benchmarks
+containers/binary_tree.go:// TODO centralize errors/maak beter duildelijk welke errors waar horen
 containers/fragment_tree.go:// TODO turn tokenization of host around (Tobias idea)
 containers/fragment_tree.go:	// TODO add string of fragment parts to an internal list, use
 containers/fragment_tree_test.go:// TODO add examples in a new file
-containers/binary_tree.go:// TODO add benchmarks
-containers/binary_tree.go:// TODO centralize errors/maak beter duildelijk welke errors waar horen
-sprinter/storage.go:// TODO change default consts to use ENV vars
-sprinter/storage.go:// TODO enhance errors
-sprinter/storage.go:// TODO fix authentication server
 sprinter/crawl.go:	// TODO Find a better solution for this
 sprinter/crawl_test.go:// TODO move other functions to use generator
+sprinter/storage.go:// TODO change default consts to use ENV vars
+sprinter/storage.go:// TODO enhance errors
+sprinter/storage.go:// TODO extend testing to setup test database, while moving every config
+sprinter/storage.go:// TODO have Go start mongod, and keep it running while testing, adding users
 sprinter/storage_test.go:// TODO add database/user creation
 sprinter/storage_test.go:// TODO restructure these errors too, especially to see if we can use
