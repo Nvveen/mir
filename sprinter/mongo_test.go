@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -54,6 +56,22 @@ func (t *TestDB) rmTestDir() (err error) {
 		err = os.RemoveAll(t.dir)
 	}
 	return
+}
+
+func run(command string) error {
+	var output []byte
+	var err error
+	if runtime.GOOS == "windows" {
+		output, err = exec.Command("cmd", "/C", command).CombinedOutput()
+	} else {
+		output, err = exec.Command("/bin/sh", "-c", command).CombinedOutput()
+	}
+
+	if err != nil {
+		msg := fmt.Sprintf("Failed to execute: %s: %s\n%s", command, err.Error(), string(output))
+		return errors.New(msg)
+	}
+	return nil
 }
 
 func TestNewTestDB(t *testing.T) {
