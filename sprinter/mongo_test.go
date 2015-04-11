@@ -35,8 +35,11 @@ func NewTestDB() (t *TestDB, err error) {
 
 // Close the test database, removing all temporary files.
 func (t *TestDB) Close() error {
-	var err error
+	err := t.rmTestDir()
+	return err
+}
 
+func (t *TestDB) rmTestDir() (err error) {
 	if len(t.dir) > 0 {
 		s := strings.Split(path.Dir(t.dir), string(os.PathSeparator))
 		if len(s) < 2 {
@@ -50,7 +53,7 @@ func (t *TestDB) Close() error {
 		}
 		err = os.RemoveAll(t.dir)
 	}
-	return err
+	return
 }
 
 func TestNewTestDB(t *testing.T) {
