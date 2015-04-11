@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path"
-	"runtime"
 	"strings"
 	"testing"
 
@@ -26,11 +24,33 @@ var (
 
 // Create  a new test database.
 func NewTestDB() (t *TestDB, err error) {
+	// create instance, tmp dir
 	t = new(TestDB)
 	t.dir, err = ioutil.TempDir("", "mongo_testdb")
 	if err != nil {
 		t = nil
-		return
+		return nil, err
+	}
+	// move to tmp
+	err = os.Chdir(t.dir)
+	if err != nil {
+		return nil, err
+	}
+	// start db
+	err = t.startDB()
+	if err != nil {
+		return nil, err
+	}
+	return
+}
+
+func (t *TestDB) startDB() (err error) {
+	cmd := ("mongod --nohttpinterface --noprealloc --nojournal ")
+	cmd += "--smallfiles --nssize=1 --oplogSize=1 --dbpath "
+	cmd += t.dir + " --bind_ip=127.0.0.1 --port 40001"
+	err = run(cmd)
+	if err != nil {
+		return err
 	}
 	return
 }
@@ -58,20 +78,9 @@ func (t *TestDB) rmTestDir() (err error) {
 	return
 }
 
-func run(command string) error {
-	var output []byte
-	var err error
-	if runtime.GOOS == "windows" {
-		output, err = exec.Command("cmd", "/C", command).CombinedOutput()
-	} else {
-		output, err = exec.Command("/bin/sh", "-c", command).CombinedOutput()
-	}
-
-	if err != nil {
-		msg := fmt.Sprintf("Failed to execute: %s: %s\n%s", command, err.Error(), string(output))
-		return errors.New(msg)
-	}
-	return nil
+func run(command string) (err error) {
+	// TODO add supervisord command execution
+	return
 }
 
 func TestNewTestDB(t *testing.T) {
