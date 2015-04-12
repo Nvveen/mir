@@ -9,13 +9,14 @@ import (
 	"net/url"
 
 	"github.com/Nvveen/mir/containers"
+	"github.com/Nvveen/mir/storage"
 	"golang.org/x/net/html"
 )
 
 // A web crawler structure that stores information on what pages
 // it visits.
 type Crawler struct {
-	DB      *Database
+	db      storage.Storage
 	urlList containers.Container
 }
 
@@ -26,7 +27,7 @@ var (
 )
 
 // Construct a new web crawler.
-func NewCrawler(con containers.Container) (c *Crawler, err error) {
+func NewCrawler(con containers.Container, db storage.Storage) (c *Crawler, err error) {
 	defer func() {
 		if lErr := recover(); lErr != nil {
 			err = ErrNewCrawler
@@ -35,12 +36,11 @@ func NewCrawler(con containers.Container) (c *Crawler, err error) {
 	}()
 	c = new(Crawler)
 	c.urlList = con
-	c.DB = NewDatabase()
-	// TODO Find a better solution for this
-	c.DB.Database = "gotest"
-	c.DB.Username = "gotestuser"
-	c.DB.Password = "welcome"
-	err = c.DB.OpenConnection()
+	c.db = db
+	err = c.db.OpenConnection()
+	if err != nil {
+		return nil, err
+	}
 	return
 }
 
@@ -119,7 +119,7 @@ func (c *Crawler) IndexURL(u string) (err error) {
 		return
 	}
 	for i := range urls {
-		c.DB.InsertRecord(urls[i], u, "urlindex")
+		c.db.InsertRecord(urls[i], u, "urlindex")
 	}
 	return
 }
@@ -148,7 +148,7 @@ func (c *Crawler) IndexLinks(resp *http.Response) (err error) {
 							val.Host = key.Host
 							val.Scheme = key.Scheme
 						}
-						err = c.DB.InsertRecord(cs, val.String(), "linkindex")
+						err = c.db.InsertRecord(cs, val.String(), "linkindex")
 						if err != nil {
 							return err
 						}

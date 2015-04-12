@@ -9,10 +9,7 @@ import (
 	"testing"
 
 	"github.com/Nvveen/mir/containers"
-	"gopkg.in/mgo.v2/bson"
 )
-
-// TODO move other functions to use generator
 
 var (
 	errInvalidDBElement = errors.New("Invalid Database element")
@@ -31,6 +28,19 @@ var (
 	c *Crawler
 )
 
+type mockStorage struct{}
+
+func (m mockStorage) OpenConnection() error {
+	return nil
+}
+
+func (m mockStorage) CloseConnection() {
+}
+
+func (m mockStorage) InsertRecord(key string, url string, collection string) error {
+	return nil
+}
+
 // We need to wrap a stringbuffer to be a ReadCloser
 type strBufCloser struct {
 	io.Reader
@@ -42,7 +52,7 @@ func (s strBufCloser) Close() error {
 
 func makeCrawler(t *testing.T) (cr *Crawler) {
 	if c == nil {
-		cr, err := NewCrawler(&containers.List{})
+		cr, err := NewCrawler(&containers.List{}, mockStorage{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -55,40 +65,9 @@ func makeCrawler(t *testing.T) (cr *Crawler) {
 	return c
 }
 
-func compareInput(t *testing.T, c *Crawler, collection string, checks []ReverseIndex) {
-	sessionCopy := c.DB.session.Clone()
-	defer sessionCopy.Close()
-	col := sessionCopy.DB(c.DB.Database).C(collection)
-	var results []ReverseIndex
-	err := col.Find(nil).All(&results)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(results) != len(checks) {
-		t.Logf("\nResults: %v\nChecks: %v", results, checks)
-		t.Fatal(errInvalidDBElement)
-	}
-	for i := range results {
-		if results[i].Key != checks[i].Key {
-			t.Logf("\n%s - %s", results[i].Key, checks[i].Key)
-			t.Fatal(errInvalidDBElement)
-		} else {
-			if len(results[i].URLs) != len(checks[i].URLs) {
-				t.Fatal(errInvalidDBElement)
-			}
-			for j := range results[i].URLs {
-				if results[i].URLs[j] != checks[i].URLs[j] {
-					t.Logf("\n%s - %s", results[i].URLs[j], checks[i].URLs[j])
-					t.Fatal(errInvalidDBElement)
-				}
-			}
-		}
-	}
-}
-
 func TestNewCrawler(t *testing.T) {
 	l := &containers.List{}
-	_, err := NewCrawler(l)
+	_, err := NewCrawler(l, mockStorage{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -96,14 +75,14 @@ func TestNewCrawler(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = NewCrawler(b)
+	_, err = NewCrawler(b, mockStorage{})
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestSetURL(t *testing.T) {
-	c, err := NewCrawler(&containers.List{})
+	c, err := NewCrawler(&containers.List{}, mockStorage{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -114,7 +93,7 @@ func TestSetURL(t *testing.T) {
 }
 
 func TestCrawler_GetURL(t *testing.T) {
-	c, err := NewCrawler(&containers.List{})
+	c, err := NewCrawler(&containers.List{}, mockStorage{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -132,7 +111,7 @@ func TestCrawler_GetURL(t *testing.T) {
 }
 
 func TestRetrieveHTML(t *testing.T) {
-	c, err := NewCrawler(&containers.List{})
+	c, err := NewCrawler(&containers.List{}, mockStorage{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -146,11 +125,10 @@ func TestRetrieveHTML(t *testing.T) {
 }
 
 func TestCrawler_ExtractInfo(t *testing.T) {
-	c, err := NewCrawler(&containers.List{})
+	c, err := NewCrawler(&containers.List{}, mockStorage{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer cleanDB(c.DB, t)
 	err = c.AddURL("http://www.leidenuniv.nl")
 	if err != nil {
 		t.Fatal(err)
@@ -159,43 +137,14 @@ func TestCrawler_ExtractInfo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Somewhat of a testing duplicate, but doing the next check makes what
-	// happens more apparent
-	sessionCopy := c.DB.session.Clone()
-	defer sessionCopy.Close()
-	col := sessionCopy.DB(c.DB.Database).C("urlindex")
-	var results []ReverseIndex
-	err = col.Find(bson.M{"key": "www"}).All(&results)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(results) != 1 {
-		t.Fatalf("%s: %#v\n", errNrKeys, results)
-	}
-	if len(results[0].URLs) != 1 {
-		t.Fatalf("%s: %#v", errNrURLs, results)
-	}
-
-	// c := makeCrawler(t)
-	// defer cleanDB(c.DB, t)
-	// err := c.ExtractInfo(0)
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
 }
 
 func TestCrawler_IndexURL(t *testing.T) {
 	c := makeCrawler(t)
-	defer cleanDB(c.DB, t)
 	err := c.IndexURL(u.String())
 	if err != nil {
 		t.Fatal(err)
 	}
-	compareInput(t, c, "urlindex", []ReverseIndex{
-		ReverseIndex{Key: "www", URLs: []string{u.String()}},
-		ReverseIndex{Key: "leidenuniv", URLs: []string{u.String()}},
-		ReverseIndex{Key: "nl", URLs: []string{u.String()}},
-	})
 }
 
 func TestCrawler_IndexLinks(t *testing.T) {
@@ -203,7 +152,6 @@ func TestCrawler_IndexLinks(t *testing.T) {
 <a href="http://www.liacs.nl">liacs></a></body></html>`
 
 	c := makeCrawler(t)
-	defer cleanDB(c.DB, t)
 
 	// Construct an empty response
 	strBuf := strings.NewReader(body)
@@ -216,11 +164,4 @@ func TestCrawler_IndexLinks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Key isn't simple, but we can hardcode it
-	// sum := md5.Sum([]byte(key))
-	// cs := hex.EncodeToString(sum[:])
-	cs := "77fba7c3017b4358d59ebd6dfd83bef1"
-	compareInput(t, c, "linkindex", []ReverseIndex{
-		ReverseIndex{Key: cs, URLs: []string{"http://www.liacs.nl"}},
-	})
 }
