@@ -13,6 +13,8 @@ import (
 	"golang.org/x/net/html"
 )
 
+// TODO fix comments
+
 // A web crawler structure that stores information on what pages
 // it visits.
 type Crawler struct {

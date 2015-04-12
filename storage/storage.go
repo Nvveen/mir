@@ -1,7 +1,6 @@
 package storage
 
-// TODO enhance errors
-// TODO add database/user creation
+// TODO fix errors
 
 type Storage interface {
 	OpenConnection() error
