@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"time"
 
 	"gopkg.in/mgo.v2"
@@ -25,6 +26,20 @@ type ReverseIndex struct {
 	URLs []string `bson:"urls"`
 }
 
+type MongoDBError struct {
+	err string
+	m   *MongoDB
+}
+
+func NewMongoDBError(err string, m MongoDB) error {
+	errfmsg := "MongoDB: %s\n"
+	errfmsg += "\tDatabase: %s\n"
+	errfmsg += "\tHost: %s\n"
+	errfmsg += "\tUsername: %s\n"
+	errfmsg += "\tPassword: %s\n"
+	return fmt.Errorf(errfmsg, err, m.Database, m.Host, m.Username, m.Password)
+}
+
 // Constructs a new Database object with the default values.
 func NewMongoDB() *MongoDB {
 	return &MongoDB{}
@@ -32,6 +47,9 @@ func NewMongoDB() *MongoDB {
 
 // Open a MongoDB connection.
 func (m *MongoDB) OpenConnection() (err error) {
+	if len(m.Host) == 0 || len(m.Database) == 0 {
+		return NewMongoDBError("empty mongo db configuration", *m)
+	}
 	mongoDBDialInfo := &mgo.DialInfo{
 		Addrs:    []string{m.Host},
 		Timeout:  60 * time.Second,

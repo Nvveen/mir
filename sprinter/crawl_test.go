@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Nvveen/mir/containers"
+	"github.com/Nvveen/mir/storage"
 )
 
 var (
@@ -161,6 +162,21 @@ func TestCrawler_IndexLinks(t *testing.T) {
 	}
 	// Do the actual indexing
 	err := c.IndexLinks(resp)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCrawler_RealStorage(t *testing.T) {
+	db := storage.NewMongoDB()
+	// TODO split mongo startup from mongo_test, and use it here too (?)
+	db.Host = "127.0.0.1:40001"
+	db.Database = "gotest"
+	c, err := NewCrawler(&containers.List{}, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = c.IndexURL("http://www.leidenuniv.nl")
 	if err != nil {
 		t.Fatal(err)
 	}

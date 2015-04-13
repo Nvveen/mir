@@ -11,6 +11,8 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
+// TODO don't need to have errors as separate variables
+
 type TestDB struct {
 	session *mgo.Session
 }
@@ -23,21 +25,37 @@ var (
 	errDatabaseConnection      = errors.New("could not connect to the testing database")
 )
 
-func TestMain(m *testing.M) {
-	var err error
+func StartMongoTesting() (err error) {
 	// check for supervisor, if it doesn't exist, we can't do testing
 	if !supervisorExists() {
-		panic(errNoSupervisor)
+		return errNoSupervisor
 	}
 	// start supervisor/mongo with the script
 	err = run("cd mongo_test && ./run.sh start")
 	if err != nil {
-		panic(errStartTestDB)
+		return errStartTestDB
 	}
-	// run tests
-	ret := m.Run()
+	return nil
+}
+
+func StopMongoTesting() (err error) {
 	// stop supervisor/mongo
 	err = run("cd mongo_test && ./run.sh stop")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func TestMain(m *testing.M) {
+	err := StartMongoTesting()
+	if err != nil {
+		panic(err)
+	}
+
+	// run tests
+	ret := m.Run()
+	err = StopMongoTesting()
 	if err != nil {
 		panic(err)
 	}

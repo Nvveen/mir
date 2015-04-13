@@ -14,6 +14,7 @@ import (
 )
 
 // TODO fix comments
+// TODO isolate testing packages from corresponding real packages
 
 // A web crawler structure that stores information on what pages
 // it visits.
