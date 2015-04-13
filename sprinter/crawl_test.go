@@ -167,6 +167,10 @@ func TestCrawler_IndexLinks(t *testing.T) {
 	}
 }
 
+// NOTE
+// If I want to split storage from sprinter, I could just move this to the
+// mongo testing while importing the crawler, instead of the other way around.
+
 func TestCrawler_RealStorage(t *testing.T) {
 	db := NewMongoDB()
 	db.Host = "127.0.0.1:40001"
