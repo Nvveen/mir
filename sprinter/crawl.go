@@ -98,19 +98,22 @@ func (c *Crawler) RetrieveHTML(i int) (result string, err error) {
 func (c *Crawler) ExtractInfo(i int) (err error) {
 	u, err := c.GetURL(i)
 	if err != nil {
-		return
+		return err
 	}
 	resp, err := http.Get(u)
 	if err != nil {
-		return
+		return err
 	}
 	defer resp.Body.Close()
 	err = c.IndexURL(u)
 	if err != nil {
-		return
+		return err
 	}
-	_ = resp
-	return
+	err = c.IndexLinks(resp)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Split a URL into tokens and index them.

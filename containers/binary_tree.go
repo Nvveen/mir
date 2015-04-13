@@ -26,7 +26,7 @@ func (e BinaryTreeError) Error() string {
 }
 
 var (
-	ErrInvalidIndex = BinaryTreeError("Invalid index in BinaryTree")
+	ErrInvalidIndex = BinaryTreeError("invalid index")
 )
 
 // Add a new binary tree with a backing container.

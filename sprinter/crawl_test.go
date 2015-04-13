@@ -12,6 +12,9 @@ import (
 	. "github.com/Nvveen/mir/sprinter"
 )
 
+// TODO add single mongo db content check
+// TODO add mongodb reset
+
 var (
 	errInvalidDBElement = errors.New("Invalid Database element")
 

@@ -30,7 +30,7 @@ func (e FragmentTreeError) Error() string {
 }
 
 var (
-	ErrTokenizer = FragmentTreeError("NewURL Tokenizer: Not a simple URL")
+	ErrTokenizer = FragmentTreeError("not a simple URL")
 )
 
 // Make a new FragmentTree object.
