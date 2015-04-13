@@ -3,7 +3,6 @@ package sprinter
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -20,10 +19,16 @@ type Crawler struct {
 }
 
 var (
-	ErrAddURL         = errors.New("unable to add URL")
-	ErrNewCrawler     = errors.New("failed to make a Crawler object")
-	ErrInvalidElement = errors.New("invalid element in container")
+	ErrAddURL         = CrawlerError("unable to add URL")
+	ErrNewCrawler     = CrawlerError("failed to make a Crawler object")
+	ErrInvalidElement = CrawlerError("invalid element in container")
 )
+
+type CrawlerError string
+
+func (e CrawlerError) Error() string {
+	return "Crawler: " + string(e)
+}
 
 // Construct a new web crawler.
 func NewCrawler(con containers.Container, db Storage) (c *Crawler, err error) {
