@@ -2,8 +2,6 @@ package containers
 
 import "bytes"
 
-// TODO centralize errors/maak beter duildelijk welke errors waar horen
-
 type (
 	// BinaryTree is an object that uses internal structures to allow
 	// for sorted storage of urls.

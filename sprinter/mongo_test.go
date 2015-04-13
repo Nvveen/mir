@@ -1,8 +1,6 @@
 package sprinter_test
 
 import (
-	"errors"
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,39 +16,21 @@ type TestDB struct {
 	session *mgo.Session
 }
 
-type TestDBError struct {
-	err       string
-	cmdOutput string
-}
-
-func NewTestDBError(err string, cmdOutput string) TestDBError {
-	return TestDBError{err, cmdOutput}
-}
+type TestDBError string
 
 func (e TestDBError) Error() string {
-	if len(e.cmdOutput) > 0 {
-		return fmt.Sprintf("Test Database: %s: %s\n", e.err, e.cmdOutput)
-	} else {
-		return fmt.Sprintf("Test Database: %s\n", e.err)
-	}
+	return "Test database: " + string(e)
 }
-
-var (
-	errNoSupervisor            = errors.New("could not find the supervisor daemon")
-	errInvalidTestingDirectory = errors.New("invalid testing directory")
-	errDatabaseConnection      = errors.New("could not connect to the testing database")
-)
 
 func StartMongoTesting() (err error) {
 	// check for supervisor, if it doesn't exist, we can't do testing
 	if !supervisorExists() {
-		return errNoSupervisor
+		return TestDBError("could not find the supervisor daemon")
 	}
 	// start supervisor/mongo with the script
 	err = run("cd mongo_test && ./run.sh start")
 	if err != nil {
-		return NewTestDBError("could not start the test database",
-			err.(TestDBError).cmdOutput)
+		return TestDBError("could not start the test database")
 	}
 	return nil
 }
@@ -59,8 +39,7 @@ func StopMongoTesting() (err error) {
 	// stop supervisor/mongo
 	err = run("cd mongo_test && ./run.sh stop")
 	if err != nil {
-		return NewTestDBError("failed to stop the testing database",
-			err.(TestDBError).cmdOutput)
+		return TestDBError("failed to stop the testing database")
 	}
 	return nil
 }
@@ -87,7 +66,7 @@ func NewTestDB() (t *TestDB, err error) {
 	// connect to mongo
 	t.session, err = mgo.Dial("127.0.0.1:40001")
 	if err != nil {
-		return nil, errDatabaseConnection
+		return nil, TestDBError("could not connect to the test database")
 	}
 
 	return t, nil
@@ -109,14 +88,13 @@ func supervisorExists() bool {
 }
 
 func run(command string) (err error) {
-	var b []byte
 	if runtime.GOOS == "windows" {
-		b, err = exec.Command("cmd", "/C", command).CombinedOutput()
+		_, err = exec.Command("cmd", "/C", command).CombinedOutput()
 	} else {
-		b, err = exec.Command("/bin/sh", "-c", command).CombinedOutput()
+		_, err = exec.Command("/bin/sh", "-c", command).CombinedOutput()
 	}
 	if err != nil {
-		return NewTestDBError("failed to execute command", string(b))
+		return TestDBError("failed to execute command " + command)
 	}
 	return nil
 }

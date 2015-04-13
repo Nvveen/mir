@@ -1,7 +1,5 @@
 package sprinter
 
-// TODO fix errors
-
 type Storage interface {
 	OpenConnection() error
 	CloseConnection()
