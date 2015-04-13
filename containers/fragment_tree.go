@@ -1,7 +1,6 @@
 package containers
 
 import (
-	"errors"
 	"net/url"
 	"strings"
 )
@@ -24,8 +23,14 @@ type (
 	}
 )
 
+type FragmentTreeError string
+
+func (e FragmentTreeError) Error() string {
+	return "Fragment Tree: " + string(e)
+}
+
 var (
-	ErrTokenizer = errors.New("NewURL Tokenizer: Not a simple URL")
+	ErrTokenizer = FragmentTreeError("NewURL Tokenizer: Not a simple URL")
 )
 
 // Make a new FragmentTree object.

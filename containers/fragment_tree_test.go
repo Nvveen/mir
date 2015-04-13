@@ -1,9 +1,11 @@
-package containers
+package containers_test
 
 import (
 	"errors"
 	"net/url"
 	"testing"
+
+	. "github.com/Nvveen/mir/containers"
 )
 
 // TODO add examples in a new file
@@ -61,21 +63,4 @@ func TestFragmentTree_AddURL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert := func(condition bool) {
-		if !condition {
-			t.Fatal(errInvalidTree)
-		}
-	}
-	assert(f.root != nil && f.root.label == "")
-	assert(
-		f.root.children[0] != nil &&
-			f.root.children[0].label == "www" &&
-			f.root.children[0].children[0] != nil &&
-			f.root.children[0].children[0].label == "google" &&
-			f.root.children[0].children[1] != nil &&
-			f.root.children[0].children[1].label == "leidenuniv" &&
-			f.root.children[0].children[0].children[0] != nil &&
-			f.root.children[0].children[0].children[0].label == "com" &&
-			f.root.children[0].children[1].children[0] != nil &&
-			f.root.children[0].children[1].children[0].label == "nl")
 }

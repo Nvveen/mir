@@ -1,11 +1,7 @@
 package containers
 
-import (
-	"bytes"
-	"errors"
-)
+import "bytes"
 
-// TODO add benchmarks
 // TODO centralize errors/maak beter duildelijk welke errors waar horen
 
 type (
@@ -23,8 +19,14 @@ type (
 	}
 )
 
+type BinaryTreeError string
+
+func (e BinaryTreeError) Error() string {
+	return "Binary Tree: " + string(e)
+}
+
 var (
-	ErrInvalidIndex = errors.New("Invalid index in BinaryTree")
+	ErrInvalidIndex = BinaryTreeError("Invalid index in BinaryTree")
 )
 
 // Add a new binary tree with a backing container.

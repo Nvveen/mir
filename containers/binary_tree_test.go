@@ -1,8 +1,10 @@
-package containers
+package containers_test
 
 import (
 	"errors"
 	"testing"
+
+	. "github.com/Nvveen/mir/containers"
 )
 
 var (
@@ -53,17 +55,7 @@ func TestBinaryTree_AddURL(t *testing.T) {
 			t.Fatal(errURLFail)
 		}
 	}()
-	b := makeBinaryTree(t)
-
-	if *(b.root.label) != "http://www.google.com/" {
-		t.Fatal(errURLFail)
-	}
-	if *(b.root.right.label) != "http://www.liacs.nl/" {
-		t.Fatal(errURLFail)
-	}
-	if *(b.root.left.label) != "http://www.bing.com/" {
-		t.Fatal(errURLFail)
-	}
+	makeBinaryTree(t)
 }
 
 func TestBinaryTree_GetNode(t *testing.T) {

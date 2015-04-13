@@ -1,8 +1,10 @@
-package containers
+package containers_test
 
 import (
 	"errors"
 	"testing"
+
+	. "github.com/Nvveen/mir/containers"
 )
 
 var (
