@@ -1,4 +1,4 @@
-package sprinter
+package sprinter_test
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/Nvveen/mir/containers"
-	"github.com/Nvveen/mir/storage"
+	. "github.com/Nvveen/mir/sprinter"
 )
 
 var (
@@ -168,8 +168,7 @@ func TestCrawler_IndexLinks(t *testing.T) {
 }
 
 func TestCrawler_RealStorage(t *testing.T) {
-	db := storage.NewMongoDB()
-	// TODO split mongo startup from mongo_test, and use it here too (?)
+	db := NewMongoDB()
 	db.Host = "127.0.0.1:40001"
 	db.Database = "gotest"
 	c, err := NewCrawler(&containers.List{}, db)

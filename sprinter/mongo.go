@@ -1,7 +1,6 @@
-package storage
+package sprinter
 
 import (
-	"fmt"
 	"time"
 
 	"gopkg.in/mgo.v2"
@@ -26,19 +25,15 @@ type ReverseIndex struct {
 	URLs []string `bson:"urls"`
 }
 
-type MongoDBError struct {
-	err string
-	m   *MongoDB
+type MongoDBError string
+
+func (e MongoDBError) Error() string {
+	return "Mongo DB: " + string(e)
 }
 
-func NewMongoDBError(err string, m MongoDB) error {
-	errfmsg := "MongoDB: %s\n"
-	errfmsg += "\tDatabase: %s\n"
-	errfmsg += "\tHost: %s\n"
-	errfmsg += "\tUsername: %s\n"
-	errfmsg += "\tPassword: %s\n"
-	return fmt.Errorf(errfmsg, err, m.Database, m.Host, m.Username, m.Password)
-}
+var (
+	ErrEmptyDB = MongoDBError("empty database")
+)
 
 // Constructs a new Database object with the default values.
 func NewMongoDB() *MongoDB {
@@ -48,7 +43,7 @@ func NewMongoDB() *MongoDB {
 // Open a MongoDB connection.
 func (m *MongoDB) OpenConnection() (err error) {
 	if len(m.Host) == 0 || len(m.Database) == 0 {
-		return NewMongoDBError("empty mongo db configuration", *m)
+		return ErrEmptyDB
 	}
 	mongoDBDialInfo := &mgo.DialInfo{
 		Addrs:    []string{m.Host},
@@ -59,10 +54,10 @@ func (m *MongoDB) OpenConnection() (err error) {
 	}
 	m.session, err = mgo.DialWithInfo(mongoDBDialInfo)
 	if err != nil {
-		return
+		return err
 	}
 	m.session.SetMode(mgo.Monotonic, true)
-	return
+	return err
 }
 
 // Close a MongoDB connection
@@ -81,9 +76,9 @@ func (m *MongoDB) InsertRecord(key string, url string, collection string) (err e
 	if err == mgo.ErrNotFound {
 		err = c.Insert(ReverseIndex{Key: key, URLs: []string{url}})
 		if err != nil {
-			return
+			return err
 		}
 		err = nil
 	}
-	return
+	return err
 }

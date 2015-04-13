@@ -1,7 +1,8 @@
-package storage_test
+package sprinter_test
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,11 +18,26 @@ type TestDB struct {
 	session *mgo.Session
 }
 
+type TestDBError struct {
+	err       string
+	cmdOutput string
+}
+
+func NewTestDBError(err string, cmdOutput string) TestDBError {
+	return TestDBError{err, cmdOutput}
+}
+
+func (e TestDBError) Error() string {
+	if len(e.cmdOutput) > 0 {
+		return fmt.Sprintf("Test Database: %s: %s\n", e.err, e.cmdOutput)
+	} else {
+		return fmt.Sprintf("Test Database: %s\n", e.err)
+	}
+}
+
 var (
 	errNoSupervisor            = errors.New("could not find the supervisor daemon")
 	errInvalidTestingDirectory = errors.New("invalid testing directory")
-	errStartTestDB             = errors.New("could not start the testing database")
-	errStopTestDB              = errors.New("could not stop the testing database")
 	errDatabaseConnection      = errors.New("could not connect to the testing database")
 )
 
@@ -33,7 +49,8 @@ func StartMongoTesting() (err error) {
 	// start supervisor/mongo with the script
 	err = run("cd mongo_test && ./run.sh start")
 	if err != nil {
-		return errStartTestDB
+		return NewTestDBError("could not start the test database",
+			err.(TestDBError).cmdOutput)
 	}
 	return nil
 }
@@ -42,7 +59,8 @@ func StopMongoTesting() (err error) {
 	// stop supervisor/mongo
 	err = run("cd mongo_test && ./run.sh stop")
 	if err != nil {
-		return err
+		return NewTestDBError("failed to stop the testing database",
+			err.(TestDBError).cmdOutput)
 	}
 	return nil
 }
@@ -90,15 +108,15 @@ func supervisorExists() bool {
 	return false
 }
 
-func run(command string) error {
-	var err error
+func run(command string) (err error) {
+	var b []byte
 	if runtime.GOOS == "windows" {
-		_, err = exec.Command("cmd", "/C", command).CombinedOutput()
+		b, err = exec.Command("cmd", "/C", command).CombinedOutput()
 	} else {
-		_, err = exec.Command("/bin/sh", "-c", command).CombinedOutput()
+		b, err = exec.Command("/bin/sh", "-c", command).CombinedOutput()
 	}
 	if err != nil {
-		return errStartTestDB
+		return NewTestDBError("failed to execute command", string(b))
 	}
 	return nil
 }

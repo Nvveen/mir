@@ -9,17 +9,13 @@ import (
 	"net/url"
 
 	"github.com/Nvveen/mir/containers"
-	"github.com/Nvveen/mir/storage"
 	"golang.org/x/net/html"
 )
-
-// TODO fix comments
-// TODO isolate testing packages from corresponding real packages
 
 // A web crawler structure that stores information on what pages
 // it visits.
 type Crawler struct {
-	db      storage.Storage
+	db      Storage
 	urlList containers.Container
 }
 
@@ -30,7 +26,7 @@ var (
 )
 
 // Construct a new web crawler.
-func NewCrawler(con containers.Container, db storage.Storage) (c *Crawler, err error) {
+func NewCrawler(con containers.Container, db Storage) (c *Crawler, err error) {
 	defer func() {
 		if lErr := recover(); lErr != nil {
 			err = ErrNewCrawler
@@ -112,6 +108,7 @@ func (c *Crawler) ExtractInfo(i int) (err error) {
 	return
 }
 
+// Split a URL into tokens and index them.
 func (c *Crawler) IndexURL(u string) (err error) {
 	parsed_url, err := url.Parse(u)
 	if err != nil {
@@ -127,6 +124,7 @@ func (c *Crawler) IndexURL(u string) (err error) {
 	return
 }
 
+// Extract links from a response body and index them.
 func (c *Crawler) IndexLinks(resp *http.Response) (err error) {
 	key := resp.Request.URL
 	sum := md5.Sum([]byte(key.String()))
