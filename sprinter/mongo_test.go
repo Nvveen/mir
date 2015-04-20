@@ -87,23 +87,19 @@ func TestMain(m *testing.M) {
 			log.Fatal(r)
 		}
 	}()
-	if testing.Short() {
-		TestDB = &testDB{&MongoDB{
-			Host: "127.0.0.1",
-			Port: "40001",
-		}}
-		err := TestDB.StartMongoTesting()
-		if err != nil {
-			panic(err)
-		}
+	TestDB = &testDB{&MongoDB{
+		Host: "127.0.0.1",
+		Port: "40001",
+	}}
+	err := TestDB.StartMongoTesting()
+	if err != nil {
+		panic(err)
 	}
 	// run tests
 	ret := m.Run()
-	if testing.Short() {
-		err := TestDB.StopMongoTesting()
-		if err != nil {
-			panic(err)
-		}
+	err = TestDB.StopMongoTesting()
+	if err != nil {
+		panic(err)
 	}
 	os.Exit(ret)
 }

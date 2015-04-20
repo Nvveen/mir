@@ -6,10 +6,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
+	"strings"
 
 	"github.com/Nvveen/mir/containers"
 	"golang.org/x/net/html"
 )
+
+// TODO Merge indexing links and words, because it won't work concurrently
 
 // A web crawler structure that stores information on what pages
 // it visits.
@@ -22,6 +26,10 @@ var (
 	ErrAddURL         = CrawlerError("unable to add URL")
 	ErrNewCrawler     = CrawlerError("failed to make a Crawler object")
 	ErrInvalidElement = CrawlerError("invalid element in container")
+
+	SkippedFragments = []string{
+		"i", "a", "the",
+	}
 )
 
 type CrawlerError string
@@ -168,4 +176,46 @@ func (c *Crawler) IndexLinks(resp *http.Response) (err error) {
 	}
 
 	return
+}
+
+// Index any and all words.
+func (c *Crawler) IndexWords(resp *http.Response) (err error) {
+	reg := regexp.MustCompile(`\w+`)
+	z := html.NewTokenizer(resp.Body)
+	insideBody := false
+	for {
+		tt := z.Next()
+		tok := z.Token()
+		switch {
+		case tt == html.ErrorToken:
+			return nil
+		case tt == html.StartTagToken && tok.Data == "body":
+			insideBody = true
+		case tt == html.EndTagToken && tok.Data == "body":
+			insideBody = false
+		case tt == html.TextToken && insideBody:
+			if !IsIgnored(tok.Data) {
+				words := reg.FindAllString(tok.Data, -1)
+				for i := range words {
+					err = c.db.InsertRecord(words[i], resp.Request.URL.String(), "wordindex")
+				}
+			}
+		}
+	}
+
+	return
+}
+
+// Check if the word we're checking is in the ignored fragments-list.
+func IsIgnored(str string) bool {
+	str = strings.ToLower(str)
+	if len(str) == 0 {
+		return true
+	}
+	for i := range SkippedFragments {
+		if str == SkippedFragments[i] {
+			return true
+		}
+	}
+	return false
 }

@@ -14,6 +14,7 @@ import (
 
 // TODO add single mongo db content check method
 // TODO add mongodb reset
+// TODO add semi-persistent mockstorage functionality
 
 var (
 	errInvalidDBElement = errors.New("Invalid Database element")
@@ -175,9 +176,10 @@ func TestCrawler_IndexLinks(t *testing.T) {
 // mongo testing while importing the crawler, instead of the other way around.
 
 func TestCrawler_RealStorage(t *testing.T) {
-	if !testing.Short() {
+	if testing.Short() {
 		t.Skip("skipping mongo storage testing for the crawler")
 	}
+	// This could be replaced with TestDB?
 	db := &MongoDB{
 		Host:     "127.0.0.1:40001",
 		Database: "gotest",
@@ -187,6 +189,21 @@ func TestCrawler_RealStorage(t *testing.T) {
 		t.Fatal(err)
 	}
 	err = c.IndexURL("http://www.leidenuniv.nl")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCrawler_IndexWords(t *testing.T) {
+	body := `<html><head><title></title></head><body>
+<a href="http://www.liacs.nl">liacs hoi</a>bla<p>wat</p></body></html>`
+	c := makeCrawler(t)
+	strBuf := strings.NewReader(body)
+	resp := &http.Response{
+		Body:    strBufCloser{strBuf},
+		Request: &http.Request{URL: u},
+	}
+	err := c.IndexWords(resp)
 	if err != nil {
 		t.Fatal(err)
 	}
