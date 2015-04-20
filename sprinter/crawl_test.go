@@ -152,25 +152,6 @@ func TestCrawler_IndexURL(t *testing.T) {
 	}
 }
 
-func TestCrawler_IndexLinks(t *testing.T) {
-	body := `<html><head><title></title></head><body>
-<a href="http://www.liacs.nl">liacs></a></body></html>`
-
-	c := makeCrawler(t)
-
-	// Construct an empty response
-	strBuf := strings.NewReader(body)
-	resp := &http.Response{
-		Body:    strBufCloser{strBuf},
-		Request: &http.Request{URL: u},
-	}
-	// Do the actual indexing
-	err := c.IndexLinks(resp)
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
 // NOTE
 // If I want to split storage from sprinter, I could just move this to the
 // mongo testing while importing the crawler, instead of the other way around.
@@ -194,7 +175,7 @@ func TestCrawler_RealStorage(t *testing.T) {
 	}
 }
 
-func TestCrawler_IndexWords(t *testing.T) {
+func TestCrawler_Index(t *testing.T) {
 	body := `<html><head><title></title></head><body>
 <a href="http://www.liacs.nl">liacs hoi</a>bla<p>wat</p></body></html>`
 	c := makeCrawler(t)
@@ -203,7 +184,7 @@ func TestCrawler_IndexWords(t *testing.T) {
 		Body:    strBufCloser{strBuf},
 		Request: &http.Request{URL: u},
 	}
-	err := c.IndexWords(resp)
+	err := c.Index(resp)
 	if err != nil {
 		t.Fatal(err)
 	}

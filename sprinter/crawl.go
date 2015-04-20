@@ -117,7 +117,7 @@ func (c *Crawler) ExtractInfo(i int) (err error) {
 	if err != nil {
 		return err
 	}
-	err = c.IndexLinks(resp)
+	err = c.Index(resp)
 	if err != nil {
 		return err
 	}
@@ -140,70 +140,81 @@ func (c *Crawler) IndexURL(u string) (err error) {
 	return
 }
 
-// Extract links from a response body and index them.
-func (c *Crawler) IndexLinks(resp *http.Response) (err error) {
-	key := resp.Request.URL
-	sum := md5.Sum([]byte(key.String()))
-	cs := hex.EncodeToString(sum[:])
-
-	z := html.NewTokenizer(resp.Body)
-	for {
-		tt := z.Next()
-		switch tt {
-		case html.ErrorToken:
-			return nil
-		case html.StartTagToken, html.EndTagToken:
-			tok := z.Token()
-			if tok.Data == "a" {
-				for i := range tok.Attr {
-					if tok.Attr[i].Key == "href" {
-						val, err := url.Parse(tok.Attr[i].Val)
-						if err != nil {
-							continue
-						}
-						if !val.IsAbs() {
-							val.Host = key.Host
-							val.Scheme = key.Scheme
-						}
-						err = c.db.InsertRecord(cs, val.String(), "linkindex")
-						if err != nil {
-							return err
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return
-}
-
-// Index any and all words.
-func (c *Crawler) IndexWords(resp *http.Response) (err error) {
-	reg := regexp.MustCompile(`\w+`)
+// Index all words and checksummed links in the document and record them.
+func (c *Crawler) Index(resp *http.Response) (err error) {
 	z := html.NewTokenizer(resp.Body)
 	insideBody := false
+	key := resp.Request.URL
+
 	for {
 		tt := z.Next()
 		tok := z.Token()
 		switch {
 		case tt == html.ErrorToken:
+			// end of document
 			return nil
-		case tt == html.StartTagToken && tok.Data == "body":
-			insideBody = true
-		case tt == html.EndTagToken && tok.Data == "body":
-			insideBody = false
-		case tt == html.TextToken && insideBody:
-			if !IsIgnored(tok.Data) {
-				words := reg.FindAllString(tok.Data, -1)
-				for i := range words {
-					err = c.db.InsertRecord(words[i], resp.Request.URL.String(), "wordindex")
+		case tt == html.StartTagToken:
+			if tok.Data == "body" {
+				// We can start recording words.
+				insideBody = true
+			} else if tok.Data == "a" {
+				err := c.indexLinks(&tok, key)
+				if err != nil {
+					return err
 				}
+			}
+		case tt == html.EndTagToken:
+			// Stop recording words.
+			if tok.Data == "body" {
+				insideBody = false
+			}
+		case tt == html.TextToken && insideBody:
+			// We are still inside the body and we have encountered a text token, which
+			// means we are finding all words inside tags.
+			err = c.indexWords(&tok, resp.Request.URL.String())
+			if err != nil {
+				return err
 			}
 		}
 	}
+}
 
-	return
+// Extract the ref from a link and record it after checksumming.
+func (c *Crawler) indexLinks(tok *html.Token, key *url.URL) (err error) {
+	for i := range tok.Attr {
+		if tok.Attr[i].Key == "href" {
+			val, err := url.Parse(tok.Attr[i].Val)
+			if err != nil {
+				continue
+			}
+			if !val.IsAbs() {
+				val.Host = key.Host
+				val.Scheme = key.Scheme
+			}
+			sum := md5.Sum([]byte(val.String()))
+			cs := hex.EncodeToString(sum[:])
+			err = c.db.InsertRecord(cs, key.String(), "linkindex")
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// Extract all words in a body and record them.
+func (c *Crawler) indexWords(tok *html.Token, u string) (err error) {
+	reg := regexp.MustCompile(`\w+`)
+	if !IsIgnored(tok.Data) {
+		words := reg.FindAllString(tok.Data, -1)
+		for i := range words {
+			err = c.db.InsertRecord(words[i], u, "wordindex")
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // Check if the word we're checking is in the ignored fragments-list.
