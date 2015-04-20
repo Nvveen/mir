@@ -31,22 +31,10 @@ func (e MongoDBError) Error() string {
 	return "Mongo DB: " + string(e)
 }
 
-var (
-	ErrEmptyDB = MongoDBError("empty database")
-)
-
-// Constructs a new Database object with the default values.
-func NewMongoDB() *MongoDB {
-	return &MongoDB{}
-}
-
 // Open a MongoDB connection.
 func (m *MongoDB) OpenConnection() (err error) {
-	if len(m.Host) == 0 || len(m.Database) == 0 {
-		return ErrEmptyDB
-	}
 	mongoDBDialInfo := &mgo.DialInfo{
-		Addrs:    []string{m.Host},
+		Addrs:    []string{m.Host + ":" + m.Port},
 		Timeout:  60 * time.Second,
 		Database: m.Database,
 		Username: m.Username,
@@ -81,4 +69,8 @@ func (m *MongoDB) InsertRecord(key string, url string, collection string) (err e
 		err = nil
 	}
 	return err
+}
+
+func (m *MongoDB) CloneSession() (session *mgo.Session) {
+	return m.session.Clone()
 }

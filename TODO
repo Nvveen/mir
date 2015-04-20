@@ -2,6 +2,5 @@ containers/fragment_tree.go:// TODO turn tokenization of host around (Tobias ide
 containers/fragment_tree.go:	// TODO add string of fragment parts to an internal list, use
 containers/fragment_tree_test.go:// TODO add examples in a new file
 sprinter/mongo.go:// TODO change default consts to use ENV vars
-sprinter/mongo_test.go:// TODO don't need to have errors as separate variables
-sprinter/crawl_test.go:// TODO add single mongo db content check
+sprinter/crawl_test.go:// TODO add single mongo db content check method
 sprinter/crawl_test.go:// TODO add mongodb reset

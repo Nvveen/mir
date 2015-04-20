@@ -1,75 +1,111 @@
 package sprinter_test
 
 import (
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"testing"
 
-	"gopkg.in/mgo.v2"
+	. "github.com/Nvveen/mir/sprinter"
 )
 
-// TODO don't need to have errors as separate variables
-
-type TestDB struct {
-	session *mgo.Session
+type testDB struct {
+	*MongoDB
 }
 
-type TestDBError string
-
-func (e TestDBError) Error() string {
-	return "Test database: " + string(e)
+type testDBError struct {
+	err string
+	cmd string
 }
 
-func StartMongoTesting() (err error) {
+var (
+	TestDB *testDB // singleton
+)
+
+func newTestDBError(err string, cmd string) testDBError {
+	return testDBError{err, cmd}
+}
+
+func (e testDBError) Error() string {
+	if len(e.cmd) > 0 {
+		return "Test database: " + e.err + " - Command output:\n" + e.cmd
+	} else {
+		return "Test database: " + e.err
+	}
+}
+
+func (db *testDB) StartMongoTesting() (err error) {
+	log.Println("starting testing mongo")
+	// TODO if database is running, restart it
 	// check for supervisor, if it doesn't exist, we can't do testing
 	if !supervisorExists() {
-		return TestDBError("could not find the supervisor daemon")
+		return newTestDBError("could not find the supervisor daemon", "")
 	}
 	// start supervisor/mongo with the script
 	err = run("cd mongo_test && ./run.sh start")
 	if err != nil {
-		return TestDBError("could not start the test database")
+		return newTestDBError("could not start the test database", err.(testDBError).cmd)
+	}
+	// Open connection
+	err = TestDB.OpenConnection()
+	if err != nil {
+		return newTestDBError("could not open the database connection: "+err.Error(), "")
 	}
 	return nil
 }
 
-func StopMongoTesting() (err error) {
+func (db *testDB) Reset() (err error) {
+	log.Println("reset testing mongo")
+	s := db.CloneSession()
+	dbs, err := s.DatabaseNames()
+	if err != nil {
+		return newTestDBError(err.Error(), "")
+	}
+	for i := range dbs {
+		s.DB(dbs[i]).DropDatabase()
+	}
+	return nil
+}
+
+func (db *testDB) StopMongoTesting() (err error) {
+	log.Println("stopping testing mongo")
 	// stop supervisor/mongo
 	err = run("cd mongo_test && ./run.sh stop")
 	if err != nil {
-		return TestDBError("failed to stop the testing database")
+		return newTestDBError("failed to stop the testing database", err.(testDBError).cmd)
 	}
 	return nil
 }
 
 func TestMain(m *testing.M) {
-	err := StartMongoTesting()
-	if err != nil {
-		panic(err)
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("recovering mongo error")
+			TestDB.StopMongoTesting()
+			log.Fatal(r)
+		}
+	}()
+	if testing.Short() {
+		TestDB = &testDB{&MongoDB{
+			Host: "127.0.0.1",
+			Port: "40001",
+		}}
+		err := TestDB.StartMongoTesting()
+		if err != nil {
+			panic(err)
+		}
 	}
-
 	// run tests
 	ret := m.Run()
-	err = StopMongoTesting()
-	if err != nil {
-		panic(err)
+	if testing.Short() {
+		err := TestDB.StopMongoTesting()
+		if err != nil {
+			panic(err)
+		}
 	}
-
 	os.Exit(ret)
-}
-
-func NewTestDB() (t *TestDB, err error) {
-	t = new(TestDB)
-
-	// connect to mongo
-	t.session, err = mgo.Dial("127.0.0.1:40001")
-	if err != nil {
-		return nil, TestDBError("could not connect to the test database")
-	}
-
-	return t, nil
 }
 
 func supervisorExists() bool {
@@ -88,20 +124,14 @@ func supervisorExists() bool {
 }
 
 func run(command string) (err error) {
+	var output []byte
 	if runtime.GOOS == "windows" {
-		_, err = exec.Command("cmd", "/C", command).CombinedOutput()
+		output, err = exec.Command("cmd", "/C", command).CombinedOutput()
 	} else {
-		_, err = exec.Command("/bin/sh", "-c", command).CombinedOutput()
+		output, err = exec.Command("/bin/sh", "-c", command).CombinedOutput()
 	}
 	if err != nil {
-		return TestDBError("failed to execute command " + command)
+		return newTestDBError("failed to execute command "+command, string(output))
 	}
 	return nil
-}
-
-func TestNewTestDB(t *testing.T) {
-	_, err := NewTestDB()
-	if err != nil {
-		t.Fatal(err)
-	}
 }

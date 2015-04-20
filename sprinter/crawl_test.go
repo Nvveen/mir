@@ -12,7 +12,7 @@ import (
 	. "github.com/Nvveen/mir/sprinter"
 )
 
-// TODO add single mongo db content check
+// TODO add single mongo db content check method
 // TODO add mongodb reset
 
 var (
@@ -175,9 +175,13 @@ func TestCrawler_IndexLinks(t *testing.T) {
 // mongo testing while importing the crawler, instead of the other way around.
 
 func TestCrawler_RealStorage(t *testing.T) {
-	db := NewMongoDB()
-	db.Host = "127.0.0.1:40001"
-	db.Database = "gotest"
+	if !testing.Short() {
+		t.Skip("skipping mongo storage testing for the crawler")
+	}
+	db := &MongoDB{
+		Host:     "127.0.0.1:40001",
+		Database: "gotest",
+	}
 	c, err := NewCrawler(&containers.List{}, db)
 	if err != nil {
 		t.Fatal(err)
