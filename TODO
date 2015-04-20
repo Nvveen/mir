@@ -3,5 +3,6 @@ containers/fragment_tree.go:	// TODO add string of fragment parts to an internal
 containers/fragment_tree_test.go:// TODO add examples in a new file
 sprinter/mongo.go:// TODO change default consts to use ENV vars
 sprinter/mongo_test.go:	// TODO if database is running, restart it
+sprinter/crawl.go:// TODO Merge indexing links and words, because it won't work concurrently
 sprinter/crawl_test.go:// TODO add single mongo db content check method
 sprinter/crawl_test.go:// TODO add mongodb reset

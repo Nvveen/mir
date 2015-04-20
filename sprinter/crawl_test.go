@@ -16,7 +16,6 @@ import (
 
 // TODO add single mongo db content check method
 // TODO add mongodb reset
-// TODO add semi-persistent mockstorage functionality
 
 var (
 	errInvalidDBElement = errors.New("Invalid Database element")
