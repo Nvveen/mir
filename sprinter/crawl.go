@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/Nvveen/mir/containers"
+	"github.com/temoto/robotstxt-go"
 	"golang.org/x/net/html"
 )
 
@@ -20,16 +21,22 @@ import (
 type Crawler struct {
 	db      Storage
 	urlList containers.Container
+	robots  map[string]*robotstxt.RobotsData
 }
 
 var (
 	ErrAddURL         = CrawlerError("unable to add URL")
 	ErrNewCrawler     = CrawlerError("failed to make a Crawler object")
 	ErrInvalidElement = CrawlerError("invalid element in container")
+	ErrAccessDenied   = CrawlerError("not allowed to crawl this subdomain")
 
 	SkippedFragments = []string{
 		"i", "a", "the",
 	}
+)
+
+const (
+	RobotsSize = 2000
 )
 
 type CrawlerError string
@@ -49,6 +56,7 @@ func NewCrawler(con containers.Container, db Storage) (c *Crawler, err error) {
 	c = new(Crawler)
 	c.urlList = con
 	c.db = db
+	c.robots = make(map[string]*robotstxt.RobotsData, RobotsSize)
 	err = c.db.OpenConnection()
 	if err != nil {
 		return nil, err
@@ -109,6 +117,7 @@ func (c *Crawler) ExtractInfo(i int) (err error) {
 	if err != nil {
 		return err
 	}
+
 	resp, err := http.Get(u)
 	if err != nil {
 		return err
@@ -230,4 +239,39 @@ func IsIgnored(str string) bool {
 		}
 	}
 	return false
+}
+
+// Check for permissions with robots.txt.
+func (c *Crawler) CheckRobots(u string) bool {
+	// Get hostname
+	URL, err := url.Parse(u)
+	if err != nil {
+		return false
+	}
+	var (
+		val *robotstxt.RobotsData
+		ok  bool
+	)
+	if val, ok = c.robots[URL.Host]; !ok {
+		// Does not exist, add to map
+		// But first check if map isn't full
+		if len(c.robots) > RobotsSize {
+			// For now discard
+			// Discarding has the current added benefit that newer robots.txt
+			// are retrieved again after discarding, so we don't have to check for
+			// updates. Either way, might not be the best way to do this.
+			c.robots = make(map[string]*robotstxt.RobotsData, RobotsSize)
+		}
+		r, err := http.Get("http://" + URL.Host + "/robots.txt")
+		if err != nil {
+			return false
+		}
+		rt, err := robotstxt.FromResponse(r)
+		if err != nil {
+			return false
+		}
+		c.robots[URL.Host] = rt
+		val = c.robots[URL.Host]
+	}
+	return val.TestAgent(URL.Path, "MIR")
 }
