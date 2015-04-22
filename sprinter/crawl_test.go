@@ -232,6 +232,7 @@ func TestCrawler_CheckRobots(t *testing.T) {
 	}
 }
 
+// TODO add crawler urlList pop method?
 func TestCrawling(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping because actual crawling does HTTP requests")

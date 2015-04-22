@@ -6,3 +6,5 @@ sprinter/mongo_test.go:	// TODO if database is running, restart it
 sprinter/crawl.go:// TODO Merge indexing links and words, because it won't work concurrently
 sprinter/crawl_test.go:// TODO add single mongo db content check method
 sprinter/crawl_test.go:// TODO add mongodb reset
+sprinter/crawl_test.go:// TODO Realstorage doesn't work yet?
+sprinter/crawl_test.go:// TODO add crawler urlList pop method?
