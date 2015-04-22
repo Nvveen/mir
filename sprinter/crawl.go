@@ -1,3 +1,4 @@
+// Package sprinter implements our fast web crawler.
 package sprinter
 
 import (
@@ -118,6 +119,10 @@ func (c *Crawler) ExtractInfo(i int) (err error) {
 		return err
 	}
 
+	if !c.CheckRobots(u) {
+		return ErrAccessDenied
+	}
+
 	resp, err := http.Get(u)
 	if err != nil {
 		return err
@@ -189,7 +194,8 @@ func (c *Crawler) Index(resp *http.Response) (err error) {
 	}
 }
 
-// Extract the ref from a link and record it after checksumming.
+// Extract the ref from a link and record it after checksumming. Also add
+// it to the buffer.
 func (c *Crawler) indexLinks(tok *html.Token, key *url.URL) (err error) {
 	for i := range tok.Attr {
 		if tok.Attr[i].Key == "href" {
@@ -201,6 +207,8 @@ func (c *Crawler) indexLinks(tok *html.Token, key *url.URL) (err error) {
 				val.Host = key.Host
 				val.Scheme = key.Scheme
 			}
+			// Add to buffer.
+			c.AddURL(val.String())
 			sum := md5.Sum([]byte(val.String()))
 			cs := hex.EncodeToString(sum[:])
 			err = c.db.InsertRecord(cs, key.String(), "linkindex")

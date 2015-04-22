@@ -16,6 +16,7 @@ import (
 
 // TODO add single mongo db content check method
 // TODO add mongodb reset
+// TODO Realstorage doesn't work yet?
 
 var (
 	errInvalidDBElement = errors.New("Invalid Database element")
@@ -212,6 +213,7 @@ func TestCrawler_Index(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Logf("\n%s", c)
 	t.Logf("\n%s", m)
 }
 
