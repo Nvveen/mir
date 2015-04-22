@@ -231,3 +231,14 @@ func TestCrawler_CheckRobots(t *testing.T) {
 		t.Fatal("http://www.google.com/search should not be indexable")
 	}
 }
+
+func TestCrawling(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping because actual crawling does HTTP requests")
+	}
+	c := makeCrawler(t)
+	// Remove crawler's first url
+	// Add http://www.liacs.nl
+	// Start crawling
+	t.Logf("%#v\n", c)
+}
