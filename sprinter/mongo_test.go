@@ -4,8 +4,10 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"runtime"
+	"syscall"
 	"testing"
 
 	. "github.com/Nvveen/mir/sprinter"
@@ -80,6 +82,13 @@ func (db *testDB) StopMongoTesting() (err error) {
 }
 
 func TestMain(m *testing.M) {
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, syscall.SIGINT)
+	go func() {
+		<-sigc
+		log.Fatal("signal interrupt caught")
+		TestDB.StopMongoTesting()
+	}()
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println("recovering mongo error")

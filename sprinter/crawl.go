@@ -96,6 +96,7 @@ func (c *Crawler) RetrieveHTML(i int) (result string, err error) {
 	if err != nil {
 		return
 	}
+	defer resp.Body.Close()
 	var b []byte
 	b, err = ioutil.ReadAll(resp.Body)
 	result = string(b)
