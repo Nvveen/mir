@@ -1,114 +1,58 @@
 package containers_test
 
-import (
-	"errors"
-	"testing"
+import "testing"
+import . "github.com/Nvveen/mir/containers"
 
-	. "github.com/Nvveen/mir/containers"
-)
-
-var (
-	errTreeError      = errors.New("Invalid tree")
-	errURLFail        = errors.New("Failed to add URL")
-	errInvalidError   = errors.New("Invalid error returned")
-	errInvalidElement = errors.New("Invalid element from tree")
-)
-
-type mockList []string
-
-func (m *mockList) AddNode(url string) (*string, error) {
-	*m = append(*m, url)
-	return &(*m)[len(*m)-1], nil
-}
-
-func (m *mockList) GetNode(i int) (url *string, err error) {
-	defer func(rerr *error) {
-		if r := recover(); r != nil {
-			*rerr = ErrInvalidIndex
-		}
-	}(&err)
-	return &(*m)[i], nil
-}
-
-func (m *mockList) RemoveNode(i int) (err error) {
-	defer func(rerr *error) {
-		if r := recover(); r != nil {
-			*rerr = r.(error)
-		}
-	}(&err)
-	t := *m
-	t = append(t[:i], t[i+1:]...)
-	*m = t
-	return nil
-}
-
-func (m *mockList) Size() int {
-	return len(*m)
-}
-
-func TestNewBinaryTree(t *testing.T) {
-	_, err := NewBinaryTree(&mockList{})
+func TestBinaryTree_AddNode(t *testing.T) {
+	b := &BinaryTree{}
+	res, err := b.AddNode("http://www.liacs.nl")
 	if err != nil {
 		t.Fatal(err)
 	}
-}
-
-func makeBinaryTree(t *testing.T) *BinaryTree {
-	b, err := NewBinaryTree(&mockList{})
+	if *res != "http://www.liacs.nl" {
+		t.Fatal("invalid element added in binary tree")
+	}
+	if b.Size() != 1 {
+		t.Fatal("invalid size for binary tree")
+	}
+	res, err = b.AddNode("http://www.leidenuniv.nl")
 	if err != nil {
 		t.Fatal(err)
 	}
-	urls := []string{
-		"http://www.google.com/",
-		"http://www.liacs.nl/",
-		"http://www.bing.com/",
+	if *res != "http://www.leidenuniv.nl" {
+		t.Logf("%s", *res)
+		t.Fatal("invalid element added in binary tree")
 	}
-	node, err := b.AddNode(urls[0])
-	if err != nil {
-		t.Fatal(err)
+	if b.Size() != 2 {
+		t.Fatal("invalid size for binary tree")
 	}
-	if node == nil || *node != urls[0] {
-		t.Fatal(errInvalidElement)
-	}
-	node, err = b.AddNode(urls[1])
-	if err != nil || node == nil || *node != urls[1] {
-		t.Fatal(err)
-	}
-	node, err = b.AddNode(urls[2])
-	if err != nil || node == nil || *node != urls[2] {
-		t.Fatal(err)
-	}
-	return b
 }
 
-func TestBinaryTree_AddURL(t *testing.T) {
-	defer func() {
-		if err := recover(); err != nil {
-			t.Fatal(errURLFail)
-		}
-	}()
-	makeBinaryTree(t)
+func TestBinaryTree_String(t *testing.T) {
+	b := &BinaryTree{}
+	b.AddNode("http://www.leidenuniv.nl")
+	b.AddNode("http://www.liacs.nl")
+	b.AddNode("http://www.alpha.nl")
+	b.AddNode("http://www.beta.nl")
+	t.Logf("%s", b)
 }
 
 func TestBinaryTree_GetNode(t *testing.T) {
-	b := makeBinaryTree(t)
-	result, err := b.GetNode(0)
+	b := &BinaryTree{}
+	b.AddNode("http://www.leidenuniv.nl")
+	res, err := b.GetNode(0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if *result != "http://www.google.com/" {
-		t.Fatal(errInvalidElement)
+	if *res != "http://www.leidenuniv.nl" {
+		t.Fatal("invalid element retrieved from binary tree")
 	}
-	result, err = b.GetNode(1)
+	b.AddNode("http://www.liacs.nl")
+	res, err = b.GetNode(1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if *result != "http://www.liacs.nl/" {
-		t.Fatal(err)
-	}
-	result, err = b.GetNode(3) // does not exist
-	if err != ErrInvalidIndex {
-		t.Logf("%#v", err)
-		t.Fatal(errInvalidError)
+	if *res != "http://www.liacs.nl" {
+		t.Fatal("invalid element retrieved from binary tree")
 	}
 }

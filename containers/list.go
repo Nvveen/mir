@@ -16,6 +16,7 @@ type ListNode struct {
 }
 
 var (
+	ErrInvalidIndex     = errors.New("invalid index")
 	ErrListNodeNotFound = errors.New("list node not found")
 )
 
