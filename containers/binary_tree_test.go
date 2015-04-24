@@ -14,15 +14,34 @@ var (
 	errInvalidElement = errors.New("Invalid element from tree")
 )
 
+type mockList struct {
+}
+
+func (m *mockList) AddNode(url string) (*string, error) {
+	return nil, nil
+}
+
+func (m *mockList) GetNode(i int) (*string, error) {
+	return nil, nil
+}
+
+func (m *mockList) RemoveNode(i int) error {
+	return nil
+}
+
+func (m *mockList) Size() int {
+	return 0
+}
+
 func TestNewBinaryTree(t *testing.T) {
-	_, err := NewBinaryTree(&List{})
+	_, err := NewBinaryTree(&mockList{})
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func makeBinaryTree(t *testing.T) *BinaryTree {
-	b, err := NewBinaryTree(&List{})
+	b, err := NewBinaryTree(&mockList{})
 	if err != nil {
 		t.Fatal(err)
 	}

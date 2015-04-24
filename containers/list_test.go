@@ -11,43 +11,82 @@ var (
 	errListInvalidLength = errors.New("Invalid length for List")
 )
 
-func makeList() List {
-	l := List{
-		"http://www.google.com/",
-		"http://www.liacs.nl/",
-		"http://www.bing.com/",
-	}
-	return l
-}
-
 func TestList_AddNode(t *testing.T) {
-	l := makeList()
-	node, err := l.AddNode("http://www.leidenuniv.nl/")
+	var l List
+	res, err := l.AddNode("http://www.liacs.nl")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(l) != 4 {
-		t.Fatal(errListInvalidLength)
-	}
-	if *node != "http://www.leidenuniv.nl/" {
-		t.Fatal(errInvalidElement)
+	if *res != "http://www.liacs.nl" {
+		t.Fatal("invalid node added to list")
 	}
 }
 
 func TestList_GetNode(t *testing.T) {
-	l := makeList()
-	result, err := l.GetNode(0)
+	var l List
+	res, err := l.AddNode("http://www.liacs.nl")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if *result != "http://www.google.com/" {
-		t.Fatal(errInvalidElement)
+	ret, err := l.GetNode(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if *res != *ret {
+		t.Fatal("inequal values in list")
+	}
+	_, err = l.GetNode(-1)
+	if err == nil {
+		t.Fatal("invalid index error expected")
 	}
 }
 
-func TestList_Size(t *testing.T) {
-	l := makeList()
-	if l.Size() != 3 {
-		t.Fatal(errListInvalidLength)
+func TestList_Len(t *testing.T) {
+	var l List
+	_, err := l.AddNode("http://www.liacs.nl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	size := l.Size()
+	if size != 1 {
+		t.Logf("Size: %d", size)
+		t.Fatal("wrong size for list")
+	}
+}
+
+func TestList_RemoveNode(t *testing.T) {
+	var l List
+	_, err := l.AddNode("http://www.liacs.nl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	l.AddNode("http://www.liacs.nl/1")
+	l.AddNode("http://www.liacs.nl/2")
+	err = l.RemoveNode(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	n, err := l.GetNode(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if *n != "http://www.liacs.nl/1" {
+		t.Fatal("invalid values in list")
+	}
+	if l.Size() != 2 {
+		t.Fatal("wrong size for list")
+	}
+}
+
+func TestList_String(t *testing.T) {
+	var l List
+	l.AddNode("http://www.liacs.nl")
+	if l.String() != "{http://www.liacs.nl}" {
+		t.Fatal("invalid string format")
+	}
+	l.AddNode("http://www.liacs.nl")
+	if l.String() != "{http://www.liacs.nl, http://www.liacs.nl}" {
+		t.Fatalf("%v", l.String())
+		t.Fatal("invalid string format")
 	}
 }
