@@ -15,8 +15,6 @@ import (
 	"golang.org/x/net/html"
 )
 
-// TODO Merge indexing links and words, because it won't work concurrently
-
 // A web crawler structure that stores information on what pages
 // it visits.
 type Crawler struct {
@@ -75,6 +73,13 @@ func (c *Crawler) AddURL(URL string) (err error) {
 		return ErrAddURL
 	}
 	return
+}
+
+func (c *Crawler) RemoveURL(i int) (err error) {
+	err := c.urlList.DeleteNode(i)
+	if err != nil {
+		return err
+	}
 }
 
 // Retrieve a url from the crawler's list by index.

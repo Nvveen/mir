@@ -1,6 +1,9 @@
 package containers
 
-import "bytes"
+import (
+	"bytes"
+	"errors"
+)
 
 type (
 	// BinaryTree is an object that uses internal structures to allow
@@ -24,7 +27,7 @@ func (e BinaryTreeError) Error() string {
 }
 
 var (
-	ErrInvalidIndex = BinaryTreeError("invalid index")
+	ErrInvalidIndex = errors.New("invalid index")
 )
 
 // Add a new binary tree with a backing container.
