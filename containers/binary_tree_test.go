@@ -56,3 +56,31 @@ func TestBinaryTree_GetNode(t *testing.T) {
 		t.Fatal("invalid element retrieved from binary tree")
 	}
 }
+
+func TestBinaryTree_RemoveNode(t *testing.T) {
+	b := &BinaryTree{}
+	b.AddNode("http://www.leidenuniv.nl")
+	err := b.RemoveNode("http://www.leidenuniv.nl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := b.GetNode(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res != nil {
+		t.Fatal("invalid deletion in binary tree")
+	}
+	b.AddNode("http://www.leidenuniv.nl")
+	b.AddNode("http://www.liacs.nl")
+	err = b.RemoveNode("http://www.liacs.nl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b.AddNode("http://www.liacs.nl")
+	err = b.RemoveNode("http://www.leidenuniv.nl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// TODO finish better testing checking
+}

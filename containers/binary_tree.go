@@ -1,5 +1,9 @@
 package containers
 
+import "fmt"
+
+// TODO add comments, proper error returns
+
 type BinaryTree struct {
 	size int
 	root *binaryTreeNode
@@ -51,6 +55,56 @@ func (b *BinaryTree) GetNode(i int) (res *string, err error) {
 	}
 	f(b.root)
 	return res, nil
+}
+
+func (b *BinaryTree) RemoveNode(val string) (err error) {
+	if b.root == nil {
+		return nil
+	}
+	if b.root.left == nil && b.root.right == nil {
+		b.root = nil
+		return
+	}
+	prev := b.size
+	if b.root.left != nil {
+		delnode(b.root.left, &(b.root), val)
+		if prev != b.size {
+			return nil
+		}
+	}
+	if b.root.right != nil {
+		delnode(b.root.right, &(b.root), val)
+	}
+	fmt.Printf("%#v\n", b.root)
+	return nil
+}
+
+func delnode(t *binaryTreeNode, parent **binaryTreeNode, val string) {
+	if t == nil {
+		return
+	}
+	if val == t.val && t.left == nil && t.right == nil {
+		if (*parent).left == t {
+			(*parent).left = nil
+		} else if (*parent).right == t {
+			(*parent).right = nil
+		}
+	} else if val == t.val && t.left != nil && t.right == nil {
+		if (*parent).left == t {
+			(*parent).left = t.left
+		} else if (*parent).right == t {
+			(*parent).right = t.left
+		}
+	} else if val == t.val && t.left == nil && t.right != nil {
+		if (*parent).left == t {
+			(*parent).left = t.right
+		} else if (*parent).right == t {
+			(*parent).right = t.right
+		}
+	} else if val == t.val && t.left != nil && t.right != nil {
+		t.val = t.left.val
+		delnode(t.left, &t, val)
+	}
 }
 
 func (b *BinaryTree) Size() int {
