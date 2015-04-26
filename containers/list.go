@@ -3,7 +3,7 @@ package containers
 import "errors"
 
 // a simple list of strings to contain urls.
-// TODO change node type name to lowercase
+// TODO fucking fix errors nou eens een keer
 
 type List struct {
 	root *ListNode

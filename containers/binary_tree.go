@@ -4,6 +4,9 @@ import (
 	"errors"
 )
 
+// TODO change GetNode to retrieve by key
+
+// A binary search tree
 type BinaryTree struct {
 	size int
 	root *binaryTreeNode
@@ -20,6 +23,7 @@ var (
 	ErrElementNotFound = errors.New("element not found")
 )
 
+// Add a node to the tree.
 func (b *BinaryTree) AddNode(val string) (res *string, err error) {
 	var n, p *binaryTreeNode
 	p = insert(b.root, val, &n)
@@ -30,6 +34,7 @@ func (b *BinaryTree) AddNode(val string) (res *string, err error) {
 	return &(n.val), nil
 }
 
+// A recursive node-addition algorithm for a tree.
 func insert(t *binaryTreeNode, val string, n **binaryTreeNode) *binaryTreeNode {
 	if t == nil {
 		*n = &binaryTreeNode{nil, val, nil}
@@ -43,6 +48,7 @@ func insert(t *binaryTreeNode, val string, n **binaryTreeNode) *binaryTreeNode {
 	return t
 }
 
+// Retrieve a node by index TODO will be by key
 func (b *BinaryTree) GetNode(i int) (res *string, err error) {
 	var f func(*binaryTreeNode)
 	idx := 0
@@ -65,6 +71,7 @@ func (b *BinaryTree) GetNode(i int) (res *string, err error) {
 	return res, nil
 }
 
+// Remove a node by key from the tree. (oh yeah, it rhymes, deal with it).
 func (b *BinaryTree) RemoveNode(key string) (err error) {
 	if b.root == nil {
 		return ErrEmptyTree
@@ -77,6 +84,7 @@ func (b *BinaryTree) RemoveNode(key string) (err error) {
 	return nil
 }
 
+// Recursive deletion in a binary tree, see wikipedia for the algorithm.
 func delnode(t **binaryTreeNode, val string, deletions *int) {
 	if t == nil {
 		return
@@ -102,6 +110,7 @@ func delnode(t **binaryTreeNode, val string, deletions *int) {
 	}
 }
 
+// Find a minimal successor node in the tree.
 func findmin(s **binaryTreeNode) (result **binaryTreeNode) {
 	result = s
 	for (*result).left != nil {
@@ -110,10 +119,12 @@ func findmin(s **binaryTreeNode) (result **binaryTreeNode) {
 	return result
 }
 
+// Return the size of the tree (nr. of nodes).
 func (b *BinaryTree) Size() int {
 	return b.size
 }
 
+// A string representation of the binary tree.
 func (b *BinaryTree) String() string {
 	var f func(*binaryTreeNode, int)
 	var res string
