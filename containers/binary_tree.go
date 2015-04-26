@@ -1,8 +1,8 @@
 package containers
 
-import "fmt"
-
-// TODO add comments, proper error returns
+import (
+	"errors"
+)
 
 type BinaryTree struct {
 	size int
@@ -14,6 +14,11 @@ type binaryTreeNode struct {
 	val   string
 	right *binaryTreeNode
 }
+
+var (
+	ErrEmptyTree       = errors.New("empty tree")
+	ErrElementNotFound = errors.New("element not found")
+)
 
 func (b *BinaryTree) AddNode(val string) (res *string, err error) {
 	var n, p *binaryTreeNode
@@ -54,57 +59,55 @@ func (b *BinaryTree) GetNode(i int) (res *string, err error) {
 		f(p.right)
 	}
 	f(b.root)
+	if res == nil {
+		return nil, ErrElementNotFound
+	}
 	return res, nil
 }
 
-func (b *BinaryTree) RemoveNode(val string) (err error) {
+func (b *BinaryTree) RemoveNode(key string) (err error) {
 	if b.root == nil {
-		return nil
+		return ErrEmptyTree
 	}
-	if b.root.left == nil && b.root.right == nil {
-		b.root = nil
-		return
+	deletions := 0
+	delnode(&(b.root), key, &deletions)
+	if deletions == 0 {
+		return ErrElementNotFound
 	}
-	prev := b.size
-	if b.root.left != nil {
-		delnode(b.root.left, &(b.root), val)
-		if prev != b.size {
-			return nil
-		}
-	}
-	if b.root.right != nil {
-		delnode(b.root.right, &(b.root), val)
-	}
-	fmt.Printf("%#v\n", b.root)
 	return nil
 }
 
-func delnode(t *binaryTreeNode, parent **binaryTreeNode, val string) {
+func delnode(t **binaryTreeNode, val string, deletions *int) {
 	if t == nil {
 		return
 	}
-	if val == t.val && t.left == nil && t.right == nil {
-		if (*parent).left == t {
-			(*parent).left = nil
-		} else if (*parent).right == t {
-			(*parent).right = nil
+	if val < (*t).val {
+		delnode(&((*t).left), val, deletions)
+	} else if val > (*t).val {
+		delnode(&((*t).right), val, deletions)
+	} else {
+		(*deletions)++
+		// delete key
+		if (*t).left != nil && (*t).right != nil {
+			successor := findmin(&((*t).right))
+			(*t).val = (*successor).val
+			delnode(successor, (*successor).val, deletions)
+		} else if (*t).left != nil {
+			*t = (*t).left
+		} else if (*t).right != nil {
+			*t = (*t).right
+		} else {
+			*t = nil
 		}
-	} else if val == t.val && t.left != nil && t.right == nil {
-		if (*parent).left == t {
-			(*parent).left = t.left
-		} else if (*parent).right == t {
-			(*parent).right = t.left
-		}
-	} else if val == t.val && t.left == nil && t.right != nil {
-		if (*parent).left == t {
-			(*parent).left = t.right
-		} else if (*parent).right == t {
-			(*parent).right = t.right
-		}
-	} else if val == t.val && t.left != nil && t.right != nil {
-		t.val = t.left.val
-		delnode(t.left, &t, val)
 	}
+}
+
+func findmin(s **binaryTreeNode) (result **binaryTreeNode) {
+	result = s
+	for (*result).left != nil {
+		result = &((*result).left)
+	}
+	return result
 }
 
 func (b *BinaryTree) Size() int {

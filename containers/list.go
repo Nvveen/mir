@@ -3,6 +3,7 @@ package containers
 import "errors"
 
 // a simple list of strings to contain urls.
+// TODO change node type name to lowercase
 
 type List struct {
 	root *ListNode
@@ -18,19 +19,19 @@ type ListNode struct {
 var (
 	ErrInvalidIndex     = errors.New("invalid index")
 	ErrListNodeNotFound = errors.New("list node not found")
+	ErrEmptyList        = errors.New("empty list")
 )
 
 // Add a node to the list.
-func (l *List) AddNode(url string) (result *string, err error) {
-	if l.root == nil {
-		l.root = new(ListNode)
-		l.root.val = url
-		l.back = l.root
-	} else {
-		n := new(ListNode)
-		n.val = url
+func (l *List) AddNode(key string) (result *string, err error) {
+	n := new(ListNode)
+	n.val = key
+	if l.back != nil {
 		l.back.next = n
-		l.back = n
+	}
+	l.back = n
+	if l.root == nil {
+		l.root = n
 	}
 	l.size++
 	return &(l.back.val), nil
@@ -57,22 +58,29 @@ func (l *List) Size() int {
 }
 
 // Remove the node from the list.
-func (l *List) RemoveNode(i int) (err error) {
-	if i < 0 || i >= l.size {
-		return ErrInvalidIndex
-	}
-	if i == 0 {
+func (l *List) RemoveNode(key string) (err error) {
+	p := l.root
+	if p == nil {
+		return ErrEmptyList
+	} else if p.val == key {
 		l.root = l.root.next
+		l.size--
+		return nil
 	}
-	idx := 0
-	for p := l.root; p != nil; p = p.next {
-		if idx == i-1 {
-			p.next = p.next.next
+	pn := l.root.next
+	for pn != nil {
+		if pn.val == key {
+			p.next = pn.next
+			if pn == l.back {
+				l.back = p
+			}
+			l.size--
+			return nil
 		}
-		idx++
+		p = p.next
+		pn = p.next.next
 	}
-	l.size--
-	return nil
+	return ErrElementNotFound
 }
 
 // A string representation of the list.

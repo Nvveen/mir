@@ -55,38 +55,58 @@ func TestList_Len(t *testing.T) {
 }
 
 func TestList_RemoveNode(t *testing.T) {
-	var l List
-	_, err := l.AddNode("http://www.liacs.nl")
+	// empty list
+	l := &List{}
+	err := l.RemoveNode("bla")
+	if err == nil {
+		t.Fatal("invalid attempted deletion in list")
+	}
+	// one element list
+	l = &List{}
+	l.AddNode("first")
+	err = l.RemoveNode("first")
 	if err != nil {
 		t.Fatal(err)
 	}
-	l.AddNode("http://www.liacs.nl/1")
-	l.AddNode("http://www.liacs.nl/2")
-	err = l.RemoveNode(0)
+	if l.Size() != 0 {
+		t.Fatal("invalid attempted deletion in list")
+	}
+	t.Logf("%s", l)
+	// two element list, delete first
+	l = &List{}
+	l.AddNode("first")
+	l.AddNode("second")
+	err = l.RemoveNode("first")
 	if err != nil {
 		t.Fatal(err)
 	}
-	n, err := l.GetNode(0)
+	if l.Size() != 1 {
+		t.Fatal("invalid attempted deletion in list")
+	}
+	t.Logf("%s", l)
+	// two element list, delete second
+	l = &List{}
+	l.AddNode("first")
+	l.AddNode("second")
+	err = l.RemoveNode("second")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if *n != "http://www.liacs.nl/1" {
-		t.Fatal("invalid values in list")
+	if l.Size() != 1 {
+		t.Fatal("invalid attempted deletion in list")
+	}
+	t.Logf("%s", l)
+	// three element list
+	l = &List{}
+	l.AddNode("first")
+	l.AddNode("second")
+	l.AddNode("third")
+	err = l.RemoveNode("second")
+	if err != nil {
+		t.Fatal(err)
 	}
 	if l.Size() != 2 {
-		t.Fatal("wrong size for list")
+		t.Fatal("invalid attempted deletion in list")
 	}
-}
-
-func TestList_String(t *testing.T) {
-	var l List
-	l.AddNode("http://www.liacs.nl")
-	if l.String() != "{http://www.liacs.nl}" {
-		t.Fatal("invalid string format")
-	}
-	l.AddNode("http://www.liacs.nl")
-	if l.String() != "{http://www.liacs.nl, http://www.liacs.nl}" {
-		t.Fatalf("%v", l.String())
-		t.Fatal("invalid string format")
-	}
+	t.Logf("%s", l)
 }

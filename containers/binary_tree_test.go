@@ -59,28 +59,54 @@ func TestBinaryTree_GetNode(t *testing.T) {
 
 func TestBinaryTree_RemoveNode(t *testing.T) {
 	b := &BinaryTree{}
-	b.AddNode("http://www.leidenuniv.nl")
-	err := b.RemoveNode("http://www.leidenuniv.nl")
+	// no elements
+	err := b.RemoveNode("5")
+	if err == nil {
+		t.Fatal("invalid attempted deletion in empty tree")
+	}
+	// one element
+	b.AddNode("5")
+	err = b.RemoveNode("5")
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err := b.GetNode(0)
+	b = &BinaryTree{}
+	t.Logf("Empty tree: %s", b)
+	// one element with left child
+	b.AddNode("5")
+	b.AddNode("4")
+	err = b.RemoveNode("5")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if res != nil {
-		t.Fatal("invalid deletion in binary tree")
-	}
-	b.AddNode("http://www.leidenuniv.nl")
-	b.AddNode("http://www.liacs.nl")
-	err = b.RemoveNode("http://www.liacs.nl")
+	t.Logf("%s", b)
+	b = &BinaryTree{}
+	// one element with right child
+	b.AddNode("5")
+	b.AddNode("6")
+	err = b.RemoveNode("5")
 	if err != nil {
 		t.Fatal(err)
 	}
-	b.AddNode("http://www.liacs.nl")
-	err = b.RemoveNode("http://www.leidenuniv.nl")
+	t.Logf("%s", b)
+	b = &BinaryTree{}
+	// 	 	 5
+	//    / \
+	//   4   7
+	//  /   / \
+	// 3   6   8
+	//          \
+	//           9
+	b.AddNode("5")
+	b.AddNode("4")
+	b.AddNode("3")
+	b.AddNode("7")
+	b.AddNode("6")
+	b.AddNode("8")
+	b.AddNode("9")
+	err = b.RemoveNode("5")
 	if err != nil {
 		t.Fatal(err)
 	}
-	// TODO finish better testing checking
+	t.Logf("%s", b)
 }
