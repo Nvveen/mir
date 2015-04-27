@@ -119,10 +119,7 @@ func TestNewCrawler(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := containers.NewBinaryTree(&containers.List{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	b := &containers.BinaryTree{}
 	_, err = NewCrawler(b, &mockStorage{})
 	if err != nil {
 		t.Fatal(err)
@@ -140,20 +137,9 @@ func TestSetURL(t *testing.T) {
 	}
 }
 
-func TestCrawler_GetURL(t *testing.T) {
-	c := makeCrawler(t)
-	result, err := c.GetURL(0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result != u.String() {
-		t.Fatalf("invalid URL returned: %s", result)
-	}
-}
-
 func TestRetrieveHTML(t *testing.T) {
 	c := makeCrawler(t)
-	result, err := c.RetrieveHTML(0)
+	result, err := c.RetrieveHTML(u.String())
 	if err != nil {
 		t.Fatal(err)
 	} else if len(result) == 0 {
@@ -163,7 +149,7 @@ func TestRetrieveHTML(t *testing.T) {
 
 func TestCrawler_ExtractInfo(t *testing.T) {
 	c := makeCrawler(t)
-	err := c.ExtractInfo(0)
+	err := c.ExtractInfo(u.String())
 	if err != nil {
 		t.Fatal(err)
 	}

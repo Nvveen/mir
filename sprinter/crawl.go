@@ -75,38 +75,14 @@ func (c *Crawler) AddURL(URL string) (err error) {
 	return
 }
 
-func (c *Crawler) RemoveURL(i int) (err error) {
-	err := c.urlList.DeleteNode(i)
-	if err != nil {
-		return err
-	}
-}
-
-// Retrieve a url from the crawler's list by index.
-func (c *Crawler) GetURL(i int) (ret string, err error) {
-	defer func() {
-		if err := recover(); err != nil {
-			err = ErrInvalidElement
-			c = nil
-		}
-	}()
-	val, err := c.urlList.GetNode(i)
-	if err != nil {
-		return "", err
-	}
-	if val == nil {
-		return "", ErrInvalidElement
-	}
-	return *val, err
+func (c *Crawler) RemoveURL(key string) (err error) {
+	err = c.urlList.RemoveNode(key)
+	return err
 }
 
 // Retrieve the HTML content of a url with index i in the Crawler.
-func (c *Crawler) RetrieveHTML(i int) (result string, err error) {
-	url, err := c.GetURL(i)
-	if err != nil {
-		return
-	}
-	resp, err := http.Get(url)
+func (c *Crawler) RetrieveHTML(key string) (result string, err error) {
+	resp, err := http.Get(key)
 	if err != nil {
 		return
 	}
@@ -118,22 +94,17 @@ func (c *Crawler) RetrieveHTML(i int) (result string, err error) {
 }
 
 // The main function that extracts various information for a url and its page.
-func (c *Crawler) ExtractInfo(i int) (err error) {
-	u, err := c.GetURL(i)
-	if err != nil {
-		return err
-	}
-
-	if !c.CheckRobots(u) {
+func (c *Crawler) ExtractInfo(key string) (err error) {
+	if !c.CheckRobots(key) {
 		return ErrAccessDenied
 	}
 
-	resp, err := http.Get(u)
+	resp, err := http.Get(key)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	err = c.IndexURL(u)
+	err = c.IndexURL(key)
 	if err != nil {
 		return err
 	}
