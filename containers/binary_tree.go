@@ -48,19 +48,17 @@ func insert(t *binaryTreeNode, val string, n **binaryTreeNode) *binaryTreeNode {
 	return t
 }
 
-// Retrieve a node by index TODO will be by key
-func (b *BinaryTree) GetNode(i int) (res *string, err error) {
+// Retrieve a node by index
+func (b *BinaryTree) GetNode(key string) (res *string, err error) {
 	var f func(*binaryTreeNode)
-	idx := 0
 	f = func(p *binaryTreeNode) {
 		if p == nil {
 			return
 		}
-		if idx == i {
+		if key == p.val {
 			res = &(p.val)
 			return
 		}
-		idx++
 		f(p.left)
 		f(p.right)
 	}

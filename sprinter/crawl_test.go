@@ -14,9 +14,8 @@ import (
 	. "github.com/Nvveen/mir/sprinter"
 )
 
-// TODO add single mongo db content check method
-// TODO add mongodb reset
 // TODO Realstorage doesn't work yet?
+// TODO check all Exported functions, and see if they can be made private
 
 var (
 	errInvalidDBElement = errors.New("Invalid Database element")

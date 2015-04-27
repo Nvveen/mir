@@ -75,6 +75,7 @@ func (c *Crawler) AddURL(URL string) (err error) {
 	return
 }
 
+// Remove a URL from the container.
 func (c *Crawler) RemoveURL(key string) (err error) {
 	err = c.urlList.RemoveNode(key)
 	return err
