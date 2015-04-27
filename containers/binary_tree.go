@@ -4,8 +4,6 @@ import (
 	"errors"
 )
 
-// TODO change GetNode to retrieve by key
-
 // A binary search tree
 type BinaryTree struct {
 	size int

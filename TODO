@@ -1,10 +1,8 @@
 containers/fragment_tree.go:// TODO turn tokenization of host around (Tobias idea)
 containers/fragment_tree.go:	// TODO add string of fragment parts to an internal list, use
+containers/list.go:// TODO fucking fix errors nou eens een keer
 containers/fragment_tree_test.go:// TODO add examples in a new file
 sprinter/mongo.go:// TODO change default consts to use ENV vars
 sprinter/mongo_test.go:	// TODO if database is running, restart it
-sprinter/crawl.go:// TODO Merge indexing links and words, because it won't work concurrently
-sprinter/crawl_test.go:// TODO add single mongo db content check method
-sprinter/crawl_test.go:// TODO add mongodb reset
-sprinter/crawl_test.go:// TODO Realstorage doesn't work yet?
+sprinter/crawl_test.go:// TODO check all Exported functions, and see if they can be made private
 sprinter/crawl_test.go:// TODO add crawler urlList pop method?

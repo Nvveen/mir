@@ -38,17 +38,19 @@ func TestBinaryTree_String(t *testing.T) {
 }
 
 func TestBinaryTree_GetNode(t *testing.T) {
+	le := "http://www.leidenuniv.nl"
+	li := "http://www.liacs.nl"
 	b := &BinaryTree{}
-	b.AddNode("http://www.leidenuniv.nl")
-	res, err := b.GetNode(0)
+	b.AddNode(le)
+	res, err := b.GetNode(le)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if *res != "http://www.leidenuniv.nl" {
+	if *res != le {
 		t.Fatal("invalid element retrieved from binary tree")
 	}
-	b.AddNode("http://www.liacs.nl")
-	res, err = b.GetNode(1)
+	b.AddNode(li)
+	res, err = b.GetNode(li)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -14,7 +14,6 @@ import (
 	. "github.com/Nvveen/mir/sprinter"
 )
 
-// TODO Realstorage doesn't work yet?
 // TODO check all Exported functions, and see if they can be made private
 
 var (
@@ -172,7 +171,8 @@ func TestCrawler_RealStorage(t *testing.T) {
 	}
 	// This could be replaced with TestDB?
 	db := &MongoDB{
-		Host:     "127.0.0.1:40001",
+		Host:     "127.0.0.1",
+		Port:     "40001",
 		Database: "gotest",
 	}
 	c, err := NewCrawler(&containers.List{}, db)
@@ -198,8 +198,6 @@ func TestCrawler_Index(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("\n%s", c)
-	t.Logf("\n%s", m)
 }
 
 func TestCrawler_CheckRobots(t *testing.T) {
@@ -226,5 +224,5 @@ func TestCrawling(t *testing.T) {
 	// Remove crawler's first url
 	// Add http://www.liacs.nl
 	// Start crawling
-	t.Logf("%#v\n", c)
+	_ = c
 }
