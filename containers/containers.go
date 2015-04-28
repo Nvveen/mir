@@ -5,3 +5,7 @@ type Container interface {
 	RemoveNode(key string) error
 	Size() int
 }
+
+type Node interface {
+	Value() string
+}

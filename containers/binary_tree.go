@@ -7,35 +7,44 @@ import (
 // A binary search tree
 type BinaryTree struct {
 	size int
-	root *binaryTreeNode
+	root *BinaryTreeNode
 }
 
-type binaryTreeNode struct {
-	left  *binaryTreeNode
+type BinaryTreeNode struct {
+	left  *BinaryTreeNode
 	val   string
-	right *binaryTreeNode
+	right *BinaryTreeNode
 }
 
 var (
 	ErrEmptyTree       = errors.New("empty tree")
 	ErrElementNotFound = errors.New("element not found")
+	ErrDuplicate       = errors.New("duplicate element")
 )
+
+func (b BinaryTreeNode) Value() string {
+	return b.val
+}
 
 // Add a node to the tree.
 func (b *BinaryTree) AddNode(val string) (res *string, err error) {
-	var n, p *binaryTreeNode
+	var n, p *BinaryTreeNode
 	p = insert(b.root, val, &n)
+	if n == nil {
+		return nil, ErrDuplicate
+	} else {
+		b.size++
+	}
 	if b.root == nil {
 		b.root = p
 	}
-	b.size++
 	return &(n.val), nil
 }
 
 // A recursive node-addition algorithm for a tree.
-func insert(t *binaryTreeNode, val string, n **binaryTreeNode) *binaryTreeNode {
+func insert(t *BinaryTreeNode, val string, n **BinaryTreeNode) *BinaryTreeNode {
 	if t == nil {
-		*n = &binaryTreeNode{nil, val, nil}
+		*n = &BinaryTreeNode{nil, val, nil}
 		return *n
 	}
 	if val < t.val {
@@ -48,8 +57,8 @@ func insert(t *binaryTreeNode, val string, n **binaryTreeNode) *binaryTreeNode {
 
 // Retrieve a node by index
 func (b *BinaryTree) GetNode(key string) (res *string, err error) {
-	var f func(*binaryTreeNode)
-	f = func(p *binaryTreeNode) {
+	var f func(*BinaryTreeNode)
+	f = func(p *BinaryTreeNode) {
 		if p == nil {
 			return
 		}
@@ -81,7 +90,7 @@ func (b *BinaryTree) RemoveNode(key string) (err error) {
 }
 
 // Recursive deletion in a binary tree, see wikipedia for the algorithm.
-func delnode(t **binaryTreeNode, val string, deletions *int) {
+func delnode(t **BinaryTreeNode, val string, deletions *int) {
 	if t == nil {
 		return
 	}
@@ -107,7 +116,7 @@ func delnode(t **binaryTreeNode, val string, deletions *int) {
 }
 
 // Find a minimal successor node in the tree.
-func findmin(s **binaryTreeNode) (result **binaryTreeNode) {
+func findmin(s **BinaryTreeNode) (result **BinaryTreeNode) {
 	result = s
 	for (*result).left != nil {
 		result = &((*result).left)
@@ -122,9 +131,9 @@ func (b *BinaryTree) Size() int {
 
 // A string representation of the binary tree.
 func (b *BinaryTree) String() string {
-	var f func(*binaryTreeNode, int)
+	var f func(*BinaryTreeNode, int)
 	var res string
-	f = func(p *binaryTreeNode, depth int) {
+	f = func(p *BinaryTreeNode, depth int) {
 		if p == nil {
 			return
 		}
@@ -137,4 +146,18 @@ func (b *BinaryTree) String() string {
 	}
 	f(b.root, 0)
 	return res
+}
+
+// Iterate over each node in the tree and perform the function f.
+func (b *BinaryTree) Walk(f func(Node)) {
+	var g func(*BinaryTreeNode)
+	g = func(p *BinaryTreeNode) {
+		if p == nil {
+			return
+		}
+		f(p)
+		g(p.left)
+		g(p.right)
+	}
+	g(b.root)
 }

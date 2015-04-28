@@ -110,3 +110,14 @@ func TestList_RemoveNode(t *testing.T) {
 	}
 	t.Logf("%s", l)
 }
+
+func TestList_Walk(t *testing.T) {
+	l := List{}
+	l.AddNode("value")
+	l.AddNode("value")
+	l.Walk(func(n Node) {
+		if n.Value() != "value" {
+			t.Fatal("invalid walk over list")
+		}
+	})
+}

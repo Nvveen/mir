@@ -1,6 +1,7 @@
 package containers_test
 
 import "testing"
+
 import . "github.com/Nvveen/mir/containers"
 
 func TestBinaryTree_AddNode(t *testing.T) {
@@ -111,4 +112,15 @@ func TestBinaryTree_RemoveNode(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("%s", b)
+}
+
+func TestBinaryTree_Walk(t *testing.T) {
+	b := &BinaryTree{}
+	b.AddNode("value")
+	b.AddNode("value")
+	b.Walk(func(n Node) {
+		if n.Value() != "value" {
+			t.Fatal("invalid walk over binary tree")
+		}
+	})
 }

@@ -215,14 +215,15 @@ func TestCrawler_CheckRobots(t *testing.T) {
 	}
 }
 
-// TODO add crawler urlList pop method?
-func TestCrawling(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping because actual crawling does HTTP requests")
+func TestCrawler_Crawl(t *testing.T) {
+	m := &mockStorage{
+		"urlindex":  map[string][]string{},
+		"linkindex": map[string][]string{},
+		"wordindex": map[string][]string{},
 	}
-	c := makeCrawler(t)
-	// Remove crawler's first url
-	// Add http://www.liacs.nl
-	// Start crawling
-	_ = c
+	c, err := NewCrawler(&containers.BinaryTree{}, m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.Crawl("http://www.liacs.nl")
 }

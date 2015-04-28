@@ -4,6 +4,7 @@ package sprinter
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -21,6 +22,7 @@ type Crawler struct {
 	db      Storage
 	urlList containers.Container
 	robots  map[string]*robotstxt.RobotsData
+	links   chan string
 }
 
 var (
@@ -35,7 +37,8 @@ var (
 )
 
 const (
-	RobotsSize = 2000
+	RobotsSize        = 2000
+	ConcurrentIndexes = 20
 )
 
 type CrawlerError string
@@ -56,6 +59,7 @@ func NewCrawler(con containers.Container, db Storage) (c *Crawler, err error) {
 	c.urlList = con
 	c.db = db
 	c.robots = make(map[string]*robotstxt.RobotsData, RobotsSize)
+	c.links = make(chan string)
 	err = c.db.OpenConnection()
 	if err != nil {
 		return nil, err
@@ -185,7 +189,8 @@ func (c *Crawler) indexLinks(tok *html.Token, key *url.URL) (err error) {
 				val.Scheme = key.Scheme
 			}
 			// Add to buffer.
-			c.AddURL(val.String())
+			c.links <- val.String()
+			// Don't add to buffer, add it to a channel and return that
 			sum := md5.Sum([]byte(val.String()))
 			cs := hex.EncodeToString(sum[:])
 			err = c.db.InsertRecord(cs, key.String(), "linkindex")
@@ -259,4 +264,33 @@ func (c *Crawler) CheckRobots(u string) bool {
 		val = c.robots[URL.Host]
 	}
 	return val.TestAgent(URL.Path, "MIR")
+}
+
+func (c *Crawler) Crawl(first string) {
+	// go func() {
+	// 	c.links <- first
+	// }()
+	// for link := range c.links {
+	// 	go func() {
+	// 		_, err := c.urlList.AddNode(link)
+	// 		if err == nil {
+	// 			fmt.Println("indexing", link)
+	// 			c.ExtractInfo(link)
+	// 		}
+	// 	}()
+	// }
+	go func() {
+		c.links <- first
+	}()
+	num := 0
+	for link := range c.links {
+		num++
+		if num == 30 {
+			break
+		}
+		go func() {
+			fmt.Printf("indexing %s\n", link)
+			c.ExtractInfo(link)
+		}()
+	}
 }

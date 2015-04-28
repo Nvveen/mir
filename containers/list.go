@@ -22,6 +22,10 @@ var (
 	ErrEmptyList        = errors.New("empty list")
 )
 
+func (l ListNode) Value() string {
+	return l.val
+}
+
 // Add a node to the list.
 func (l *List) AddNode(key string) (result *string, err error) {
 	n := new(ListNode)
@@ -94,4 +98,11 @@ func (l *List) String() string {
 	}
 	res += "}"
 	return res
+}
+
+// Iterate over the items in the list and execute the function f.
+func (l *List) Walk(f func(Node)) {
+	for p := l.root; p != nil; p = p.next {
+		f(p)
+	}
 }
