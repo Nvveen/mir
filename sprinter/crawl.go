@@ -57,22 +57,20 @@ func (c *Crawler) Crawl(uri string) (err error) {
 	m := new(sync.Mutex) // a locking mechanism for the counter
 L:
 	for {
-		if count >= c.MaxRequests {
-			break L
-		}
 		select {
 		case link := <-c.links:
 			go func(mut *sync.Mutex) {
 				mut.Lock()
 				count++
-				_, err := c.list.AddNode(link)
 				mut.Unlock()
-				if err != containers.ErrDuplicateElement {
-					c.extractInfo(link)
-				}
+				c.extractInfo(link)
 			}(m)
 		case <-time.After(10 * time.Second):
 			fmt.Printf("timed out")
+			break L
+		}
+		if count >= c.MaxRequests {
+			// TODO can't close?
 			break L
 		}
 	}
@@ -97,8 +95,11 @@ func (c *Crawler) extractInfo(link string) {
 		panic(err)
 	}
 	defer resp.Body.Close()
+	err = c.indexURL(link)
+	if err != nil {
+		panic(err)
+	}
 	c.indexContent(resp)
-	c.indexURL(link)
 	<-c.functionBuffer
 }
 
@@ -106,13 +107,12 @@ func (c *Crawler) extractInfo(link string) {
 func (c *Crawler) indexContent(resp *http.Response) (err error) {
 	z := html.NewTokenizer(resp.Body)
 	insideBody := false
-L:
 	for {
 		tt := z.Next()
 		tok := z.Token()
 		switch {
 		case tt == html.ErrorToken:
-			break L
+			return nil
 		case tt == html.StartTagToken:
 			if tok.Data == "body" {
 				insideBody = true
@@ -154,13 +154,11 @@ func (c *Crawler) indexLinks(uri string, key *url.URL) (err error) {
 	// We have indexed the link, now add it to the sprinter to be crawled,
 	// after we have determined it is not a duplicate (by adding it to the list,
 	// which should have duplicate detection.
+	// Take note that this next bit may block, but it doesn't matter as the
+	// indexing is still valid.
 	_, err = c.list.AddNode(u.String())
 	if err != containers.ErrDuplicateElement {
-		fmt.Printf("adding %s\n", u.String())
 		c.links <- u.String()
-		fmt.Printf("added %s\n", u.String())
-	} else {
-		fmt.Printf("link %s already indexed\n", u.String())
 	}
 	return nil
 }

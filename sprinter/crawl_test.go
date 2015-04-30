@@ -11,6 +11,7 @@ type mockStorage map[string]map[string]string
 func newMockStorage() *mockStorage {
 	m := &mockStorage{
 		"linkindex": map[string]string{},
+		"urlindex":  map[string]string{},
 	}
 	return m
 }
@@ -25,6 +26,18 @@ func (m *mockStorage) OpenConnection() (err error) {
 func (m *mockStorage) InsertRecord(key string, url string, collection string) (err error) {
 	(*m)[collection][key] = url
 	return nil
+}
+
+func (m *mockStorage) String() string {
+	res := "{\n"
+	for name, collection := range *m {
+		res += name + ":\n"
+		for key, val := range collection {
+			res += "\t" + key + ": " + val + "\n"
+		}
+	}
+	res += "}"
+	return res
 }
 
 func TestNewCrawler(t *testing.T) {
@@ -44,8 +57,8 @@ func TestCrawler_Crawl(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	c.MaxRequests = 100
+	c.MaxRequests = 20
 	c.MaxConcurrentRequests = 1
 	c.Crawl("http://www.liacs.nl")
-	t.Logf("%#v\n", m)
+	t.Logf("%s\n", m)
 }
