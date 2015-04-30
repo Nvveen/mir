@@ -97,12 +97,13 @@ func (c *Crawler) extractInfo(link string) {
 		panic(err)
 	}
 	defer resp.Body.Close()
-	c.index(resp)
+	c.indexContent(resp)
+	c.indexURL(link)
 	<-c.functionBuffer
 }
 
 // Index a response body's certain elements, including links.
-func (c *Crawler) index(resp *http.Response) (err error) {
+func (c *Crawler) indexContent(resp *http.Response) (err error) {
 	z := html.NewTokenizer(resp.Body)
 	insideBody := false
 L:
@@ -160,6 +161,22 @@ func (c *Crawler) indexLinks(uri string, key *url.URL) (err error) {
 		fmt.Printf("added %s\n", u.String())
 	} else {
 		fmt.Printf("link %s already indexed\n", u.String())
+	}
+	return nil
+}
+
+// Index a URL by splitting it into components and indexing each one.
+func (c *Crawler) indexURL(uri string) (err error) {
+	parsed_url, err := url.Parse(uri)
+	if err != nil {
+		return err
+	}
+	urls, err := containers.TokenizeURL(parsed_url)
+	if err != nil {
+		return err
+	}
+	for i := range urls {
+		c.db.InsertRecord(urls[i], uri, "urlindex")
 	}
 	return nil
 }
