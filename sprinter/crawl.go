@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"golang.org/x/net/html"
@@ -45,22 +46,33 @@ func (c *Crawler) Crawl(uri string) (err error) {
 		c.links <- uri
 	}()
 	count := 0
-L:
 	for {
 		if count >= c.MaxRequests {
 			break
 		}
-		select {
-		case link, ok := <-c.links:
-			count++
-			if ok {
-				go c.extractInfo(link)
-			} else {
-				fmt.Println("everything closed")
-			}
-		case <-time.After(5 * time.Second):
-			break L
+		m := new(sync.Mutex)      // a locking mechanism for the counter
+		wg := new(sync.WaitGroup) // we need to wait for the number of jobs to complete
+		// before proceeding.
+		fmt.Printf("spawning %d thread(s)\n", c.MaxConcurrentRequests)
+		wg.Add(c.MaxConcurrentRequests)
+		for i := 0; i < c.MaxConcurrentRequests; i++ {
+			// spawn the extraction functions
+			go func(id int, mutex *sync.Mutex, wait *sync.WaitGroup) {
+				defer wait.Done()
+				mutex.Lock()
+				fmt.Printf("thread %d at count %d\n", id, count)
+				count++
+				mutex.Unlock()
+				// If the channel is empty, wait 5 seconds before timing out.
+				select {
+				case link := <-c.links:
+					c.extractInfo(link)
+				case <-time.After(5 * time.Second):
+					return
+				}
+			}(i, m, wg)
 		}
+		wg.Wait()
 	}
 	return nil
 }

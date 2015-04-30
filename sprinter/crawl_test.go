@@ -41,6 +41,8 @@ func TestCrawler_Crawl(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	c.MaxRequests = 1
+	c.MaxConcurrentRequests = 1
 	c.Crawl("http://www.liacs.nl")
 	t.Logf("%#v\n", m)
 }
