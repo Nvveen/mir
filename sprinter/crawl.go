@@ -4,7 +4,6 @@ package sprinter
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -25,10 +24,7 @@ type Crawler struct {
 	list                  containers.Container
 }
 
-var (
-	ErrInvalidParameters = errors.New("invalid parameters for crawler")
-)
-
+// Create a new Crawler object with the specified Storage and link buffer.
 func NewCrawler(storage Storage, buffer containers.Container) (c *Crawler, err error) {
 	c = &Crawler{}
 	c.MaxRequests = 10
@@ -78,6 +74,8 @@ L:
 	return nil
 }
 
+// A concurrent method to retrieve a HTTP object's body, and extract the
+// necessary information, such as links and more.
 func (c *Crawler) extractInfo(link string) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -98,6 +96,7 @@ func (c *Crawler) extractInfo(link string) {
 	<-c.functionBuffer
 }
 
+// Index a response body's certain elements, including links.
 func (c *Crawler) index(resp *http.Response) (err error) {
 	z := html.NewTokenizer(resp.Body)
 	insideBody := false
@@ -130,6 +129,7 @@ L:
 	return nil
 }
 
+// Index a link into the storage object.
 func (c *Crawler) indexLinks(uri string, key *url.URL) (err error) {
 	u, err := url.Parse(uri)
 	if err != nil {
