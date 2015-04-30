@@ -19,7 +19,6 @@ type BinaryTreeNode struct {
 var (
 	ErrEmptyTree       = errors.New("empty tree")
 	ErrElementNotFound = errors.New("element not found")
-	ErrDuplicate       = errors.New("duplicate element")
 )
 
 func (b BinaryTreeNode) Value() string {
@@ -31,7 +30,7 @@ func (b *BinaryTree) AddNode(val string) (res *string, err error) {
 	var n, p *BinaryTreeNode
 	p = insert(b.root, val, &n)
 	if n == nil {
-		return nil, ErrDuplicate
+		return nil, ErrDuplicateElement
 	} else {
 		b.size++
 	}

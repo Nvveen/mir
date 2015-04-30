@@ -28,6 +28,11 @@ func (l ListNode) Value() string {
 
 // Add a node to the list.
 func (l *List) AddNode(key string) (result *string, err error) {
+	for p := l.root; p != nil; p = p.next {
+		if p.val == key {
+			return nil, ErrDuplicateElement
+		}
+	}
 	n := new(ListNode)
 	n.val = key
 	if l.back != nil {
