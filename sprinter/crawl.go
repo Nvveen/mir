@@ -4,6 +4,7 @@ package sprinter
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -18,11 +19,15 @@ import (
 type Crawler struct {
 	links                 chan string
 	functionBuffer        chan int
-	MaxRequests           int
-	MaxConcurrentRequests int
+	MaxRequests           int // The max number of requests that can be handled in total.
+	MaxConcurrentRequests int // The max number of requests that can be handled concurrently.
 	db                    Storage
 	list                  containers.Container
 }
+
+var (
+	ErrInvalidParameters = errors.New("invalid parameters for crawler")
+)
 
 // Create a new Crawler object with the specified Storage and link buffer.
 func NewCrawler(storage Storage, buffer containers.Container) (c *Crawler, err error) {
