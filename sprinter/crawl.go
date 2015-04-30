@@ -12,20 +12,24 @@ import (
 	"time"
 
 	"golang.org/x/net/html"
+
+	"github.com/Nvveen/mir/containers"
 )
 
 type Crawler struct {
 	links                 chan string
+	functionBuffer        chan int
 	MaxRequests           int
 	MaxConcurrentRequests int
 	db                    Storage
+	list                  containers.Container
 }
 
 var (
 	ErrInvalidParameters = errors.New("invalid parameters for crawler")
 )
 
-func NewCrawler(storage Storage) (c *Crawler, err error) {
+func NewCrawler(storage Storage, buffer containers.Container) (c *Crawler, err error) {
 	c = &Crawler{}
 	c.MaxRequests = 10
 	c.MaxConcurrentRequests = 1
@@ -34,10 +38,13 @@ func NewCrawler(storage Storage) (c *Crawler, err error) {
 	if err != nil {
 		return nil, err
 	}
+	c.list = buffer
 	c.links = make(chan string, c.MaxConcurrentRequests)
+	c.functionBuffer = make(chan int, c.MaxConcurrentRequests)
 	return
 }
 
+// Start at the URI and crawl from there.
 func (c *Crawler) Crawl(uri string) (err error) {
 	if c.MaxRequests <= 0 || c.MaxConcurrentRequests <= 0 {
 		return ErrInvalidParameters
@@ -46,33 +53,27 @@ func (c *Crawler) Crawl(uri string) (err error) {
 		c.links <- uri
 	}()
 	count := 0
+	m := new(sync.Mutex) // a locking mechanism for the counter
+L:
 	for {
 		if count >= c.MaxRequests {
-			break
+			break L
 		}
-		m := new(sync.Mutex)      // a locking mechanism for the counter
-		wg := new(sync.WaitGroup) // we need to wait for the number of jobs to complete
-		// before proceeding.
-		fmt.Printf("spawning %d thread(s)\n", c.MaxConcurrentRequests)
-		wg.Add(c.MaxConcurrentRequests)
-		for i := 0; i < c.MaxConcurrentRequests; i++ {
-			// spawn the extraction functions
-			go func(id int, mutex *sync.Mutex, wait *sync.WaitGroup) {
-				defer wait.Done()
-				mutex.Lock()
-				fmt.Printf("thread %d at count %d\n", id, count)
+		select {
+		case link := <-c.links:
+			go func(mut *sync.Mutex) {
+				mut.Lock()
 				count++
-				mutex.Unlock()
-				// If the channel is empty, wait 5 seconds before timing out.
-				select {
-				case link := <-c.links:
+				_, err := c.list.AddNode(link)
+				mut.Unlock()
+				if err != containers.ErrDuplicateElement {
 					c.extractInfo(link)
-				case <-time.After(5 * time.Second):
-					return
 				}
-			}(i, m, wg)
+			}(m)
+		case <-time.After(10 * time.Second):
+			fmt.Printf("timed out")
+			break L
 		}
-		wg.Wait()
 	}
 	return nil
 }
@@ -83,6 +84,7 @@ func (c *Crawler) extractInfo(link string) {
 			fmt.Printf("could not retrieve %s: %s\n", link, err)
 		}
 	}()
+	c.functionBuffer <- 1
 	fmt.Printf("retrieving %s\n", link)
 	client := &http.Client{
 		Timeout: time.Second * 5,
@@ -93,6 +95,7 @@ func (c *Crawler) extractInfo(link string) {
 	}
 	defer resp.Body.Close()
 	c.index(resp)
+	<-c.functionBuffer
 }
 
 func (c *Crawler) index(resp *http.Response) (err error) {
@@ -141,6 +144,17 @@ func (c *Crawler) indexLinks(uri string, key *url.URL) (err error) {
 	err = c.db.InsertRecord(cs, key.String(), "linkindex")
 	if err != nil {
 		return err
+	}
+	// We have indexed the link, now add it to the sprinter to be crawled,
+	// after we have determined it is not a duplicate (by adding it to the list,
+	// which should have duplicate detection.
+	_, err = c.list.AddNode(u.String())
+	if err != containers.ErrDuplicateElement {
+		fmt.Printf("adding %s\n", u.String())
+		c.links <- u.String()
+		fmt.Printf("added %s\n", u.String())
+	} else {
+		fmt.Printf("link %s already indexed\n", u.String())
 	}
 	return nil
 }
