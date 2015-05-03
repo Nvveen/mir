@@ -9,12 +9,17 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
+	"sync"
 	"time"
 
 	"golang.org/x/net/html"
 
 	"github.com/Nvveen/mir/containers"
 )
+
+// TODO readd robots.txt
+// TODO memory can grow indefinitely
 
 type Crawler struct {
 	links                 chan string
@@ -41,8 +46,6 @@ func NewCrawler(storage Storage, buffer containers.Container) (c *Crawler, err e
 		return nil, err
 	}
 	c.list = buffer
-	c.links = make(chan string, c.MaxConcurrentRequests)
-	c.functionBuffer = make(chan bool, c.MaxConcurrentRequests)
 	return
 }
 
@@ -51,14 +54,21 @@ func (c *Crawler) Crawl(uri string) (err error) {
 	if c.MaxRequests <= 0 || c.MaxConcurrentRequests <= 0 {
 		return ErrInvalidParameters
 	}
+	c.links = make(chan string, c.MaxConcurrentRequests)
+	c.functionBuffer = make(chan bool, c.MaxConcurrentRequests)
 	go func() {
 		c.links <- uri
 	}()
+	var wg sync.WaitGroup
+	wg.Add(c.MaxRequests)
 	for count := 0; count < c.MaxRequests; count++ {
 		link := <-c.links
-		count++
-		go c.extractInfo(link)
+		go func() {
+			defer wg.Done()
+			c.extractInfo(link)
+		}()
 	}
+	wg.Wait()
 	return nil
 }
 
@@ -90,7 +100,6 @@ func (c *Crawler) extractInfo(link string) {
 
 // Index a response body's certain elements, including links.
 func (c *Crawler) indexContent(resp *http.Response) (err error) {
-	fmt.Println("indexing contents")
 	defer func(rErr *error) {
 		if err := recover(); err != nil {
 			*rErr = err.(error)
@@ -136,11 +145,8 @@ func (c *Crawler) indexContent(resp *http.Response) (err error) {
 			g(c)
 		}
 	}
-	fmt.Println("indexing links")
 	f(doc)
-	fmt.Println("indexing words")
 	g(doc)
-	fmt.Println("done")
 	return nil
 }
 
@@ -190,17 +196,26 @@ func (c *Crawler) indexURL(uri string) (err error) {
 	return nil
 }
 
+// Take the body of a HTTP Get request, parse it for singular words, normalize
+// them and insert them into the database.
 func (c *Crawler) indexWords(data string, uri *url.URL) (err error) {
 	reg := regexp.MustCompile(`\w+`)
 	words := reg.FindAllString(data, -1)
 L:
 	for i := range words {
+		// don't save single letter words
+		if len(words[i]) == 1 {
+			continue
+		}
+		// ignore capitalization
+		w := strings.ToLower(words[i])
+		// filter for ignored words
 		for j := range IgnoredWords {
-			if words[i] == IgnoredWords[j] {
+			if w == IgnoredWords[j] {
 				continue L
 			}
 		}
-		err := c.db.InsertRecord(words[i], uri.String(), "wordindex")
+		err := c.db.InsertRecord(w, uri.String(), "wordindex")
 		if err != nil {
 			return err
 		}

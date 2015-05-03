@@ -58,8 +58,23 @@ func TestCrawler_Crawl(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	c.MaxRequests = 20
+	c.MaxRequests = 5
 	c.MaxConcurrentRequests = 1
+	c.Crawl("http://www.liacs.nl")
+	t.Logf("%s\n", m)
+}
+
+func TestCrawler_ConcurrentCrawl(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping because of http request")
+	}
+	m := newMockStorage()
+	c, err := NewCrawler(m, &containers.List{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.MaxRequests = 10
+	c.MaxConcurrentRequests = 5
 	c.Crawl("http://www.liacs.nl")
 	t.Logf("%s\n", m)
 }
