@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"sync"
+	"regexp"
 	"time"
 
 	"golang.org/x/net/html"
@@ -27,6 +27,7 @@ type Crawler struct {
 
 var (
 	ErrInvalidParameters = errors.New("invalid parameters for crawler")
+	IgnoredWords         = []string{"the"}
 )
 
 // Create a new Crawler object with the specified Storage and link buffer.
@@ -53,26 +54,10 @@ func (c *Crawler) Crawl(uri string) (err error) {
 	go func() {
 		c.links <- uri
 	}()
-	count := 0
-	m := new(sync.Mutex) // a locking mechanism for the counter
-L:
-	for {
-		select {
-		case link := <-c.links:
-			go func(mut *sync.Mutex) {
-				mut.Lock()
-				count++
-				mut.Unlock()
-				c.extractInfo(link)
-			}(m)
-		case <-time.After(10 * time.Second):
-			fmt.Printf("timed out")
-			break L
-		}
-		if count >= c.MaxRequests {
-			// TODO can't close?
-			break L
-		}
+	for count := 0; count < c.MaxRequests; count++ {
+		link := <-c.links
+		count++
+		go c.extractInfo(link)
 	}
 	return nil
 }
@@ -105,33 +90,57 @@ func (c *Crawler) extractInfo(link string) {
 
 // Index a response body's certain elements, including links.
 func (c *Crawler) indexContent(resp *http.Response) (err error) {
-	z := html.NewTokenizer(resp.Body)
+	fmt.Println("indexing contents")
+	defer func(rErr *error) {
+		if err := recover(); err != nil {
+			*rErr = err.(error)
+		}
+	}(&err)
+	doc, err := html.Parse(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	var f, g func(*html.Node)
 	insideBody := false
-	for {
-		tt := z.Next()
-		tok := z.Token()
-		switch {
-		case tt == html.ErrorToken:
-			return nil
-		case tt == html.StartTagToken:
-			if tok.Data == "body" {
-				insideBody = true
-			} else if tok.Data == "a" {
-				for i := range tok.Attr {
-					err := c.indexLinks(tok.Attr[i].Val, resp.Request.URL)
+	f = func(n *html.Node) {
+		if n.Type == html.ElementNode && n.Data == "a" {
+			for i := range n.Attr {
+				if n.Attr[i].Key == "href" {
+					err := c.indexLinks(n.Attr[i].Val, resp.Request.URL)
 					if err != nil {
-						return err
+						panic(err)
 					}
 				}
 			}
-		case tt == html.EndTagToken:
-			if tok.Data == "body" {
-				insideBody = false
-			}
-		case tt == html.TextToken && insideBody:
-			//
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			f(c)
 		}
 	}
+	g = func(n *html.Node) {
+		if n.Type == html.ElementNode && n.Data == "body" {
+			insideBody = true
+		}
+		if insideBody && n.Type == html.TextNode {
+			err := c.indexWords(n.Data, resp.Request.URL)
+			if err != nil {
+				panic(err)
+			}
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			if insideBody && c.Type == html.ElementNode && c.Data == "script" {
+				n.RemoveChild(c)
+				continue
+			}
+			g(c)
+		}
+	}
+	fmt.Println("indexing links")
+	f(doc)
+	fmt.Println("indexing words")
+	g(doc)
+	fmt.Println("done")
 	return nil
 }
 
@@ -158,7 +167,9 @@ func (c *Crawler) indexLinks(uri string, key *url.URL) (err error) {
 	// indexing is still valid.
 	_, err = c.list.AddNode(u.String())
 	if err != containers.ErrDuplicateElement {
-		c.links <- u.String()
+		go func() {
+			c.links <- u.String()
+		}()
 	}
 	return nil
 }
@@ -175,6 +186,24 @@ func (c *Crawler) indexURL(uri string) (err error) {
 	}
 	for i := range urls {
 		c.db.InsertRecord(urls[i], uri, "urlindex")
+	}
+	return nil
+}
+
+func (c *Crawler) indexWords(data string, uri *url.URL) (err error) {
+	reg := regexp.MustCompile(`\w+`)
+	words := reg.FindAllString(data, -1)
+L:
+	for i := range words {
+		for j := range IgnoredWords {
+			if words[i] == IgnoredWords[j] {
+				continue L
+			}
+		}
+		err := c.db.InsertRecord(words[i], uri.String(), "wordindex")
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

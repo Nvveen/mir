@@ -12,6 +12,7 @@ func newMockStorage() *mockStorage {
 	m := &mockStorage{
 		"linkindex": map[string]string{},
 		"urlindex":  map[string]string{},
+		"wordindex": map[string]string{},
 	}
 	return m
 }
