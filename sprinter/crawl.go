@@ -18,7 +18,7 @@ import (
 
 type Crawler struct {
 	links                 chan string
-	functionBuffer        chan int
+	functionBuffer        chan bool
 	MaxRequests           int // The max number of requests that can be handled in total.
 	MaxConcurrentRequests int // The max number of requests that can be handled concurrently.
 	db                    Storage
@@ -42,7 +42,7 @@ func NewCrawler(storage Storage, buffer containers.Container) (c *Crawler, err e
 	}
 	c.list = buffer
 	c.links = make(chan string, c.MaxConcurrentRequests)
-	c.functionBuffer = make(chan int, c.MaxConcurrentRequests)
+	c.functionBuffer = make(chan bool, c.MaxConcurrentRequests)
 	return
 }
 
@@ -70,7 +70,7 @@ func (c *Crawler) extractInfo(link string) {
 			fmt.Printf("could not retrieve %s: %s\n", link, err)
 		}
 	}()
-	c.functionBuffer <- 1
+	c.functionBuffer <- true
 	fmt.Printf("retrieving %s\n", link)
 	client := &http.Client{
 		Timeout: time.Second * 5,
