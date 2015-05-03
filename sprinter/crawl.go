@@ -16,10 +16,10 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/Nvveen/mir/containers"
+	"github.com/temoto/robotstxt-go"
 )
 
-// TODO readd robots.txt
-// TODO memory can grow indefinitely
+// TODO make robotslock rwmutex
 
 type Crawler struct {
 	links                 chan string
@@ -28,6 +28,8 @@ type Crawler struct {
 	MaxConcurrentRequests int // The max number of requests that can be handled concurrently.
 	db                    Storage
 	list                  containers.Container
+	robots                map[string]*robotstxt.RobotsData
+	robotsLock            sync.Mutex
 }
 
 var (
@@ -35,10 +37,14 @@ var (
 	IgnoredWords         = []string{"the"}
 )
 
+const (
+	RobotsSize = 2000
+)
+
 // Create a new Crawler object with the specified Storage and link buffer.
 func NewCrawler(storage Storage, buffer containers.Container) (c *Crawler, err error) {
 	c = &Crawler{}
-	c.MaxRequests = 10
+	c.MaxRequests = 1
 	c.MaxConcurrentRequests = 1
 	c.db = storage
 	err = c.db.OpenConnection()
@@ -46,6 +52,7 @@ func NewCrawler(storage Storage, buffer containers.Container) (c *Crawler, err e
 		return nil, err
 	}
 	c.list = buffer
+	c.robots = make(map[string]*robotstxt.RobotsData, 2000)
 	return
 }
 
@@ -80,6 +87,10 @@ func (c *Crawler) extractInfo(link string) {
 			fmt.Printf("could not retrieve %s: %s\n", link, err)
 		}
 	}()
+	// check for robots.txt
+	if c.robotsIgnore(link) {
+		return
+	}
 	c.functionBuffer <- true
 	fmt.Printf("retrieving %s\n", link)
 	client := &http.Client{
@@ -171,10 +182,11 @@ func (c *Crawler) indexLinks(uri string, key *url.URL) (err error) {
 	// which should have duplicate detection.
 	// Take note that this next bit may block, but it doesn't matter as the
 	// indexing is still valid.
-	_, err = c.list.AddNode(u.String())
+	us := u.String()
+	_, err = c.list.AddNode(us)
 	if err != containers.ErrDuplicateElement {
 		go func() {
-			c.links <- u.String()
+			c.links <- us
 		}()
 	}
 	return nil
@@ -221,4 +233,33 @@ L:
 		}
 	}
 	return nil
+}
+
+// Check if the current path can be scanned according to its host's robots.txt
+// Panics if the url couldn't be parsed or robots.txt coudn't be parsed.
+func (c *Crawler) robotsIgnore(uri string) bool {
+	u, err := url.Parse(uri)
+	if err != nil {
+		panic(err)
+	}
+	c.robotsLock.Lock()
+	// if c.robots is full, clean it
+	if len(c.robots) == RobotsSize {
+		c.robots = make(map[string]*robotstxt.RobotsData)
+	}
+	if _, ok := c.robots[u.Host]; !ok {
+		// robots.txt hasn't been done yet.
+		resp, err := http.Get(u.Scheme + "://" + u.Host + "/robots.txt")
+		if err != nil {
+			return false
+		}
+		defer resp.Body.Close()
+		c.robots[u.Host], err = robotstxt.FromResponse(resp)
+		if err != nil {
+			panic(err)
+		}
+	}
+	res := !c.robots[u.Host].TestAgent(u.Path, "Mir")
+	c.robotsLock.Unlock()
+	return res
 }
