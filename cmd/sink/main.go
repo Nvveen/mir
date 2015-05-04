@@ -9,10 +9,10 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	d := 0
-	if len(r.URL.Path[1:]) == 1 || len(r.URL.Path[1:]) == 2 {
-		val, _ := strconv.ParseInt(r.URL.Path[1:], 10, 32)
-		d = int(val)
-	}
+	// if len(r.URL.Path[1:]) == 1 || len(r.URL.Path[1:]) == 2 {
+	val, _ := strconv.ParseInt(r.URL.Path[1:], 10, 32)
+	d = int(val)
+	// }
 	f1 := `<html>
 <head><title></title></head>
 <body>
