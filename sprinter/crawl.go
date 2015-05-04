@@ -21,9 +21,6 @@ import (
 	"github.com/temoto/robotstxt-go"
 )
 
-// TODO true sequential crawl alongside parallel?
-// TODO create crawling sink server
-
 type Crawler struct {
 	links                 chan string
 	functionBuffer        chan bool
@@ -67,6 +64,9 @@ func (c *Crawler) Crawl(uri string) (err error) {
 	if c.MaxRequests <= 0 || c.MaxConcurrentRequests <= 0 {
 		return ErrInvalidParameters
 	}
+	if c.MaxConcurrentRequests == 1 {
+		return c.CrawlSequential(uri)
+	}
 	c.links = make(chan string, c.MaxConcurrentRequests)
 	c.functionBuffer = make(chan bool, c.MaxConcurrentRequests)
 	go func() {
@@ -86,6 +86,27 @@ func (c *Crawler) Crawl(uri string) (err error) {
 		}(link, count)
 	}
 	wg.Wait()
+	return nil
+}
+
+// A somewhat easier function to crawl sequentially. See also the Crawl function.
+func (c *Crawler) CrawlSequential(uri string) (err error) {
+	if c.MaxRequests <= 0 {
+		return ErrInvalidParameters
+	}
+	c.links = make(chan string, 1)
+	c.functionBuffer = make(chan bool, 1)
+	c.links <- uri
+	for count := 0; count < c.MaxRequests; count++ {
+		link := <-c.links
+		c.log.Println("retrieved", link)
+		// check for robots.txt
+		func(l string, id int) {
+			c.functionBuffer <- true
+			c.extractInfo(l, id)
+			<-c.functionBuffer
+		}(link, count)
+	}
 	return nil
 }
 
