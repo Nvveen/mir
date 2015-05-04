@@ -1,4 +1,4 @@
-package sprinter_test
+package sprinter
 
 import (
 	"log"
@@ -9,8 +9,6 @@ import (
 	"runtime"
 	"syscall"
 	"testing"
-
-	. "github.com/Nvveen/mir/sprinter"
 )
 
 type testDB struct {

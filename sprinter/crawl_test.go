@@ -78,6 +78,19 @@ func TestCrawler_ConcurrentCrawl(t *testing.T) {
 	t.Logf("%s\n", m)
 }
 
+func TestCrawler_InvalidLink(t *testing.T) {
+	c, err := NewCrawler(newMockStorage(), &containers.List{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.MaxRequests = 1
+	c.MaxConcurrentRequests = 1
+	err = c.Crawl("mailto:postmaster@localhost.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestCrawler_robotsIgnore(t *testing.T) {
 	c, _ := NewCrawler(newMockStorage(), &containers.List{})
 	if c.robotsIgnore("http://www.google.com/catalogs/about") {

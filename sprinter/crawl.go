@@ -6,8 +6,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 	"sync"
@@ -19,7 +21,8 @@ import (
 	"github.com/temoto/robotstxt-go"
 )
 
-// TODO make robotslock rwmutex
+// TODO true sequential crawl alongside parallel?
+// TODO create crawling sink server
 
 type Crawler struct {
 	links                 chan string
@@ -28,8 +31,10 @@ type Crawler struct {
 	MaxConcurrentRequests int // The max number of requests that can be handled concurrently.
 	db                    Storage
 	list                  containers.Container
+	listLock              sync.Mutex
 	robots                map[string]*robotstxt.RobotsData
 	robotsLock            sync.Mutex
+	log                   *log.Logger
 }
 
 var (
@@ -53,6 +58,7 @@ func NewCrawler(storage Storage, buffer containers.Container) (c *Crawler, err e
 	}
 	c.list = buffer
 	c.robots = make(map[string]*robotstxt.RobotsData, 2000)
+	c.log = log.New(os.Stdout, "sprinter: ", log.LstdFlags)
 	return
 }
 
@@ -70,10 +76,14 @@ func (c *Crawler) Crawl(uri string) (err error) {
 	wg.Add(c.MaxRequests)
 	for count := 0; count < c.MaxRequests; count++ {
 		link := <-c.links
-		go func() {
-			defer wg.Done()
-			c.extractInfo(link)
-		}()
+		c.log.Println("retrieved", link)
+		// check for robots.txt
+		go func(l string, id int) {
+			c.functionBuffer <- true
+			c.extractInfo(l, id)
+			<-c.functionBuffer
+			wg.Done()
+		}(link, count)
 	}
 	wg.Wait()
 	return nil
@@ -81,18 +91,17 @@ func (c *Crawler) Crawl(uri string) (err error) {
 
 // A concurrent method to retrieve a HTTP object's body, and extract the
 // necessary information, such as links and more.
-func (c *Crawler) extractInfo(link string) {
+func (c *Crawler) extractInfo(link string, id int) {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Printf("could not retrieve %s: %s\n", link, err)
+			c.log.Printf("could not retrieve %s: %s\n", link, err)
 		}
 	}()
-	// check for robots.txt
+	// check for robots
 	if c.robotsIgnore(link) {
-		return
+		panic(fmt.Errorf("%s is ignored", link))
 	}
-	c.functionBuffer <- true
-	fmt.Printf("retrieving %s\n", link)
+	c.log.Printf("extracting %s\n", id, link, c.list.Size())
 	client := &http.Client{
 		Timeout: time.Second * 5,
 	}
@@ -106,7 +115,6 @@ func (c *Crawler) extractInfo(link string) {
 		panic(err)
 	}
 	c.indexContent(resp)
-	<-c.functionBuffer
 }
 
 // Index a response body's certain elements, including links.
@@ -183,7 +191,11 @@ func (c *Crawler) indexLinks(uri string, key *url.URL) (err error) {
 	// Take note that this next bit may block, but it doesn't matter as the
 	// indexing is still valid.
 	us := u.String()
+	// TODO maybe do this at the start, so even the first link isn't duplicated
+	// TODO also, maybe limit the size of the list to the size of MaxRequests
+	c.listLock.Lock()
 	_, err = c.list.AddNode(us)
+	c.listLock.Unlock()
 	if err != containers.ErrDuplicateElement {
 		go func() {
 			c.links <- us
@@ -241,6 +253,9 @@ func (c *Crawler) robotsIgnore(uri string) bool {
 	u, err := url.Parse(uri)
 	if err != nil {
 		panic(err)
+	}
+	if u.Scheme != "http" {
+		return false
 	}
 	c.robotsLock.Lock()
 	// if c.robots is full, clean it
