@@ -4,5 +4,5 @@ containers/list.go:// TODO fucking fix errors nou eens een keer
 containers/fragment_tree_test.go:// TODO add examples in a new file
 sprinter/mongo.go:// TODO change default consts to use ENV vars
 sprinter/mongo_test.go:	// TODO if database is running, restart it
-sprinter/crawl_test.go:// TODO check all Exported functions, and see if they can be made private
-sprinter/crawl_test.go:// TODO add crawler urlList pop method?
+sprinter/crawl.go:	// TODO maybe do this at the start, so even the first link isn't duplicated
+sprinter/crawl.go:	// TODO also, maybe limit the size of the list to the size of MaxRequests
