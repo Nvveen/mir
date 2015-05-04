@@ -19,5 +19,5 @@ func BenchmarkCrawl_SequentialStaticList(b *testing.B) {
 	c.MaxRequests = 1000
 	c.MaxConcurrentRequests = 1
 	b.ResetTimer()
-	c.Crawl("http://www.leidenuniv.nl")
+	c.Crawl("http://localhost:8080")
 }

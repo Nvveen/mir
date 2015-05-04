@@ -101,7 +101,7 @@ func (c *Crawler) extractInfo(link string, id int) {
 	if c.robotsIgnore(link) {
 		panic(fmt.Errorf("%s is ignored", link))
 	}
-	c.log.Printf("extracting %s\n", id, link, c.list.Size())
+	c.log.Printf("extracting %s\n", link)
 	client := &http.Client{
 		Timeout: time.Second * 5,
 	}
