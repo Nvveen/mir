@@ -1,14 +1,11 @@
-package sprinter
+package storage
 
 import (
 	"log"
 	"os"
 	"os/exec"
-	"os/signal"
 	"path/filepath"
 	"runtime"
-	"syscall"
-	"testing"
 )
 
 type testDB struct {
@@ -36,6 +33,12 @@ func (e testDBError) Error() string {
 	}
 }
 
+// Using a MongoDB backend, export a testing database (done so we don't have
+// to export the testDB struct).
+func NewTestDBMongo(m *MongoDB) *testDB {
+	return &testDB{m}
+}
+
 func (db *testDB) StartMongoTesting() (err error) {
 	log.Println("starting testing mongo")
 	// TODO if database is running, restart it
@@ -44,7 +47,7 @@ func (db *testDB) StartMongoTesting() (err error) {
 		return newTestDBError("could not find the supervisor daemon", "")
 	}
 	// start supervisor/mongo with the script
-	err = run("cd mongo_test && ./run.sh start")
+	err = run("cd ../storage/mongo_test && ./run.sh start")
 	if err != nil {
 		return newTestDBError("could not start the test database", err.(testDBError).cmd)
 	}
@@ -72,43 +75,11 @@ func (db *testDB) Reset() (err error) {
 func (db *testDB) StopMongoTesting() (err error) {
 	log.Println("stopping testing mongo")
 	// stop supervisor/mongo
-	err = run("cd mongo_test && ./run.sh stop")
+	err = run("cd ../storage/mongo_test && ./run.sh stop")
 	if err != nil {
 		return newTestDBError("failed to stop the testing database", err.(testDBError).cmd)
 	}
 	return nil
-}
-
-func TestMain(m *testing.M) {
-	sigc := make(chan os.Signal, 1)
-	signal.Notify(sigc, syscall.SIGINT)
-	go func() {
-		<-sigc
-		log.Fatal("signal interrupt caught")
-		TestDB.StopMongoTesting()
-	}()
-	defer func() {
-		if r := recover(); r != nil {
-			log.Println("recovering mongo error")
-			TestDB.StopMongoTesting()
-			log.Fatal(r)
-		}
-	}()
-	TestDB = &testDB{&MongoDB{
-		Host: "127.0.0.1",
-		Port: "40001",
-	}}
-	err := TestDB.StartMongoTesting()
-	if err != nil {
-		panic(err)
-	}
-	// run tests
-	ret := m.Run()
-	err = TestDB.StopMongoTesting()
-	if err != nil {
-		panic(err)
-	}
-	os.Exit(ret)
 }
 
 func supervisorExists() bool {

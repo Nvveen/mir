@@ -1,4 +1,4 @@
-package sprinter
+package storage
 
 type Storage interface {
 	OpenConnection() error

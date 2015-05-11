@@ -1,9 +1,14 @@
 package sprinter
 
 import (
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"testing"
 
 	"github.com/Nvveen/mir/containers"
+	"github.com/Nvveen/mir/storage"
 )
 
 // Sequential <-> Concurrent
@@ -11,8 +16,40 @@ import (
 // List <-> Binary Search Tree
 // Remember to determine the parallelism.
 
+func TestMain(m *testing.M) {
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, syscall.SIGINT)
+	go func() {
+		<-sigc
+		storage.TestDB.StopMongoTesting()
+		log.Fatal("signal interrupt caught")
+	}()
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("recovering mongo error")
+			storage.TestDB.StopMongoTesting()
+			log.Print(r)
+		}
+	}()
+	storage.TestDB = storage.NewTestDBMongo(&storage.MongoDB{
+		Host: "127.0.0.1",
+		Port: "40001",
+	})
+	err := storage.TestDB.StartMongoTesting()
+	if err != nil {
+		panic(err)
+	}
+	// run tests
+	ret := m.Run()
+	err = storage.TestDB.StopMongoTesting()
+	if err != nil {
+		panic(err)
+	}
+	os.Exit(ret)
+}
+
 func BenchmarkCrawl_SequentialStaticList(b *testing.B) {
-	c, err := NewCrawler(newMockStorage(), &containers.List{})
+	c, err := NewCrawler(storage.NewMockStorage(), &containers.List{})
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -23,7 +60,7 @@ func BenchmarkCrawl_SequentialStaticList(b *testing.B) {
 }
 
 func BenchmarkCrawl_Concurrent10StaticList(b *testing.B) {
-	c, err := NewCrawler(newMockStorage(), &containers.List{})
+	c, err := NewCrawler(storage.NewMockStorage(), &containers.List{})
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -34,7 +71,7 @@ func BenchmarkCrawl_Concurrent10StaticList(b *testing.B) {
 }
 
 func BenchmarkCrawl_Concurrent100StaticList(b *testing.B) {
-	c, err := NewCrawler(newMockStorage(), &containers.List{})
+	c, err := NewCrawler(storage.NewMockStorage(), &containers.List{})
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -45,7 +82,7 @@ func BenchmarkCrawl_Concurrent100StaticList(b *testing.B) {
 }
 
 func BenchmarkCrawl_Concurrent1000StaticList(b *testing.B) {
-	c, err := NewCrawler(newMockStorage(), &containers.List{})
+	c, err := NewCrawler(storage.NewMockStorage(), &containers.List{})
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -56,7 +93,7 @@ func BenchmarkCrawl_Concurrent1000StaticList(b *testing.B) {
 }
 
 func BenchmarkCrawl_Concurrent1000MongoList(b *testing.B) {
-	c, err := NewCrawler(TestDB, &containers.List{})
+	c, err := NewCrawler(storage.TestDB, &containers.List{})
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -67,7 +104,7 @@ func BenchmarkCrawl_Concurrent1000MongoList(b *testing.B) {
 }
 
 func BenchmarkCrawl_Concurrent1000MongoBST(b *testing.B) {
-	c, err := NewCrawler(TestDB, &containers.BinaryTree{})
+	c, err := NewCrawler(storage.TestDB, &containers.BinaryTree{})
 	if err != nil {
 		b.Fatal(err)
 	}

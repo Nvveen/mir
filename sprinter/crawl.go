@@ -15,10 +15,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/temoto/robotstxt-go"
 	"golang.org/x/net/html"
 
 	"github.com/Nvveen/mir/containers"
-	"github.com/temoto/robotstxt-go"
+	"github.com/Nvveen/mir/storage"
 )
 
 type Crawler struct {
@@ -26,7 +27,7 @@ type Crawler struct {
 	functionBuffer        chan bool
 	MaxRequests           int // The max number of requests that can be handled in total.
 	MaxConcurrentRequests int // The max number of requests that can be handled concurrently.
-	db                    Storage
+	db                    storage.Storage
 	list                  containers.Container
 	listLock              sync.Mutex
 	robots                map[string]*robotstxt.RobotsData
@@ -43,8 +44,8 @@ const (
 	RobotsSize = 2000
 )
 
-// Create a new Crawler object with the specified Storage and link buffer.
-func NewCrawler(storage Storage, buffer containers.Container) (c *Crawler, err error) {
+// Create a new Crawler object with the specified storage.Storage and link buffer.
+func NewCrawler(storage storage.Storage, buffer containers.Container) (c *Crawler, err error) {
 	c = &Crawler{}
 	c.MaxRequests = 1
 	c.MaxConcurrentRequests = 1

@@ -2,46 +2,12 @@ package sprinter
 
 import (
 	"github.com/Nvveen/mir/containers"
+	"github.com/Nvveen/mir/storage"
 	"testing"
 )
 
-type mockStorage map[string]map[string]string
-
-func newMockStorage() *mockStorage {
-	m := &mockStorage{
-		"linkindex": map[string]string{},
-		"urlindex":  map[string]string{},
-		"wordindex": map[string]string{},
-	}
-	return m
-}
-
-func (m *mockStorage) CloseConnection() {
-}
-
-func (m *mockStorage) OpenConnection() (err error) {
-	return nil
-}
-
-func (m *mockStorage) InsertRecord(key string, url string, collection string) (err error) {
-	(*m)[collection][key] = url
-	return nil
-}
-
-func (m *mockStorage) String() string {
-	res := "{\n"
-	for name, collection := range *m {
-		res += name + ":\n"
-		for key, val := range collection {
-			res += "\t" + key + ": " + val + "\n"
-		}
-	}
-	res += "}"
-	return res
-}
-
 func TestNewCrawler(t *testing.T) {
-	c, err := NewCrawler(newMockStorage(), &containers.List{})
+	c, err := NewCrawler(storage.NewMockStorage(), &containers.List{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,7 +18,7 @@ func TestCrawler_Crawl(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping because of http request")
 	}
-	m := newMockStorage()
+	m := storage.NewMockStorage()
 	c, err := NewCrawler(m, &containers.List{})
 	if err != nil {
 		t.Fatal(err)
@@ -67,7 +33,7 @@ func TestCrawler_CrawlSequential(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping because of http request")
 	}
-	m := newMockStorage()
+	m := storage.NewMockStorage()
 	c, err := NewCrawler(m, &containers.List{})
 	if err != nil {
 		t.Fatal(err)
@@ -81,7 +47,7 @@ func TestCrawler_ConcurrentCrawl(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping because of http request")
 	}
-	m := newMockStorage()
+	m := storage.NewMockStorage()
 	c, err := NewCrawler(m, &containers.List{})
 	if err != nil {
 		t.Fatal(err)
@@ -93,7 +59,7 @@ func TestCrawler_ConcurrentCrawl(t *testing.T) {
 }
 
 func TestCrawler_InvalidLink(t *testing.T) {
-	c, err := NewCrawler(newMockStorage(), &containers.List{})
+	c, err := NewCrawler(storage.NewMockStorage(), &containers.List{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,7 +72,7 @@ func TestCrawler_InvalidLink(t *testing.T) {
 }
 
 func TestCrawler_robotsIgnore(t *testing.T) {
-	c, _ := NewCrawler(newMockStorage(), &containers.List{})
+	c, _ := NewCrawler(storage.NewMockStorage(), &containers.List{})
 	if c.robotsIgnore("http://www.google.com/catalogs/about") {
 		t.Fatalf("invalid robots result for www.google.com/catalogs/about")
 	}
