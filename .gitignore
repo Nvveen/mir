@@ -1,2 +1,3 @@
 cmd/sprinter/sprinter
+cmd/sink/sink
 test/
