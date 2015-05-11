@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/Nvveen/mir/containers"
+	"github.com/Nvveen/mir/sink"
 	"github.com/Nvveen/mir/sprinter"
 	"github.com/Nvveen/mir/storage"
 )
@@ -24,6 +25,7 @@ var (
 
 func runBench() {
 	// Start local server
+	go sink.RunSink()
 	BenchVerbose = *verbose
 	// Benchmark
 	f := func(bn func(*testing.B)) {
