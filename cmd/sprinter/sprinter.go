@@ -33,18 +33,23 @@ func runBench() {
 	// Benchmark
 	f := func(bn func(*testing.B)) {
 		name := runtime.FuncForPC(reflect.ValueOf(bn).Pointer()).Name()
-		log.Printf("Benchmarking %s...\n", name)
-		b := testing.Benchmark(bn)
-		log.Printf("\tAllocated bytes per operation: %d\n", b.AllocsPerOp())
-		log.Printf("\tAllocations per operation: %d\n", b.AllocedBytesPerOp())
-		log.Printf("\tNanoseconds per operation: %d\n", b.NsPerOp())
-		log.Printf("\tMilliseconds per operation: %d\n", b.NsPerOp()/1000000)
-		log.Printf("\tSeconds per operation: %d\n", b.NsPerOp()/1000000000)
+		for i := 0; i < 5; i++ {
+			log.Printf("Benchmarking (%d) %s...\n", i, name)
+			b := testing.Benchmark(bn)
+			log.Printf("\tAllocated bytes per operation: %d\n", b.AllocsPerOp())
+			log.Printf("\tAllocations per operation: %d\n", b.AllocedBytesPerOp())
+			log.Printf("\tNanoseconds per operation: %d\n", b.NsPerOp())
+			log.Printf("\tMilliseconds per operation: %d\n", b.NsPerOp()/1000000)
+			log.Printf("\tSeconds per operation: %d\n", b.NsPerOp()/1000000000)
+		}
 	}
 	f(BenchmarkCrawl_SequentialStaticList)
 	f(BenchmarkCrawl_Concurrent10StaticList)
+	f(BenchmarkCrawl_Concurrent50StaticList)
 	f(BenchmarkCrawl_Concurrent100StaticList)
+	f(BenchmarkCrawl_Concurrent500StaticList)
 	f(BenchmarkCrawl_Concurrent1000StaticList)
+	f(BenchmarkCrawl_Concurrent100StaticBST)
 	// start mongo
 	sigc := make(chan os.Signal, 1)
 	signal.Notify(sigc, syscall.SIGINT)
@@ -68,8 +73,8 @@ func runBench() {
 	if err != nil {
 		panic(err)
 	}
-	f(BenchmarkCrawl_Concurrent1000MongoList)
-	f(BenchmarkCrawl_Concurrent1000MongoBST)
+	f(BenchmarkCrawl_Concurrent100MongoList)
+	f(BenchmarkCrawl_Concurrent100MongoBST)
 	err = storage.TestDB.StopMongoTesting()
 	if err != nil {
 		panic(err)
