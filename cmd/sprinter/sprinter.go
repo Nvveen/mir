@@ -61,8 +61,11 @@ func runBench() {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println("recovering mongo error")
-			storage.TestDB.StopMongoTesting()
-			log.Print(r)
+			err := storage.TestDB.StopMongoTesting()
+			if err != nil {
+				log.Println(err)
+			}
+			log.Println(r)
 		}
 	}()
 	storage.TestDB = storage.NewTestDBMongo(&storage.MongoDB{
