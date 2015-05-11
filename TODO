@@ -2,7 +2,7 @@ containers/fragment_tree.go:// TODO turn tokenization of host around (Tobias ide
 containers/fragment_tree.go:	// TODO add string of fragment parts to an internal list, use
 containers/list.go:// TODO fucking fix errors nou eens een keer
 containers/fragment_tree_test.go:// TODO add examples in a new file
-sprinter/mongo.go:// TODO change default consts to use ENV vars
-sprinter/mongo_test.go:	// TODO if database is running, restart it
 sprinter/crawl.go:	// TODO maybe do this at the start, so even the first link isn't duplicated
 sprinter/crawl.go:	// TODO also, maybe limit the size of the list to the size of MaxRequests
+storage/mongo.go:// TODO change default consts to use ENV vars
+storage/testdb.go:	// TODO if database is running, restart it
