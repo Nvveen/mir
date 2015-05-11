@@ -3,10 +3,74 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
-	"mir/sprinter"
+	"os"
+	"os/signal"
+	"reflect"
+	"runtime"
+	"syscall"
+	"testing"
+
+	"github.com/Nvveen/mir/containers"
+	"github.com/Nvveen/mir/sprinter"
+	"github.com/Nvveen/mir/storage"
 )
+
+var (
+	uri     = flag.String("uri", "", "Pass an initial URI to start crawling from")
+	bench   = flag.Bool("bench", false, "Instead of actually crawling, benchmark from the testing suite")
+	verbose = flag.Bool("verbose", false, "Show output of the crawling")
+)
+
+func runBench() {
+	// Start local server
+	BenchVerbose = *verbose
+	// Benchmark
+	f := func(bn func(*testing.B)) {
+		name := runtime.FuncForPC(reflect.ValueOf(bn).Pointer()).Name()
+		b := testing.Benchmark(bn)
+		log.Printf("Benchmarking %s...\n", name)
+		log.Printf("\tAllocated bytes per operation: %d\n", b.AllocsPerOp())
+		log.Printf("\tAllocations per operation: %d\n", b.AllocedBytesPerOp())
+		log.Printf("\tNanoseconds per operation: %d\n", b.NsPerOp())
+		log.Printf("\tMilliseconds per operation: %d\n", b.NsPerOp()/1000000)
+		log.Printf("\tSeconds per operation: %d\n", b.NsPerOp()/1000000000)
+	}
+	f(BenchmarkCrawl_SequentialStaticList)
+	f(BenchmarkCrawl_Concurrent10StaticList)
+	f(BenchmarkCrawl_Concurrent100StaticList)
+	f(BenchmarkCrawl_Concurrent1000StaticList)
+	// start mongo
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, syscall.SIGINT)
+	go func() {
+		<-sigc
+		storage.TestDB.StopMongoTesting()
+		log.Fatal("signal interrupt caught")
+	}()
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("recovering mongo error")
+			storage.TestDB.StopMongoTesting()
+			log.Print(r)
+		}
+	}()
+	storage.TestDB = storage.NewTestDBMongo(&storage.MongoDB{
+		Host: "127.0.0.1",
+		Port: "40001",
+	})
+	err := storage.TestDB.StartMongoTesting()
+	if err != nil {
+		panic(err)
+	}
+	f(BenchmarkCrawl_Concurrent1000MongoList)
+	f(BenchmarkCrawl_Concurrent1000MongoBST)
+	err = storage.TestDB.StopMongoTesting()
+	if err != nil {
+		panic(err)
+	}
+	os.Exit(0)
+}
 
 func init() {
 	// Parse flags
@@ -14,22 +78,26 @@ func init() {
 }
 
 func main() {
-	if len(flag.Args()) != 1 {
-		log.Fatalf("Invalid number of arguments: %d\n", len(flag.Args()))
-	}
+	defer func() {
+		if err := recover(); err != nil {
+			log.Fatalln("Unrecoverable:", err)
+		}
+	}()
 	// Parse flags
 	flag.Parse()
-	c, err := sprinter.NewCrawler()
+	if *bench {
+		runBench()
+	}
+	if uri == nil || len(*uri) == 0 {
+		panic("crawler needs a URI to crawl if not benchmarking.")
+	}
+	c, err := sprinter.NewCrawler(storage.NewMockStorage(), &containers.List{})
 	if err != nil {
 		panic(err)
 	}
-	err = c.AddURL("http://www.google.com")
+	c.Verbose = *verbose
+	err = c.Crawl(*uri)
 	if err != nil {
 		panic(err)
 	}
-	result, err := c.RetrieveHTML(0)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%s\n", result)
 }
