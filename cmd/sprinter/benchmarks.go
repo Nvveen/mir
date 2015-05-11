@@ -13,14 +13,18 @@ import (
 // List <-> Binary Search Tree
 // Remember to determine the parallelism.
 
-var BenchVerbose bool
+var (
+	BenchVerbose          bool
+	MaxRequests           = 2000
+	MaxConcurrentRequests = 1000
+)
 
 func BenchmarkCrawl_SequentialStaticList(b *testing.B) {
 	c, err := sprinter.NewCrawler(storage.NewMockStorage(), &containers.List{})
 	if err != nil {
 		b.Fatal(err)
 	}
-	c.MaxRequests = 2000
+	c.MaxRequests = MaxRequests
 	c.MaxConcurrentRequests = 1
 	c.Verbose = BenchVerbose
 	b.ResetTimer()
@@ -32,7 +36,7 @@ func BenchmarkCrawl_Concurrent10StaticList(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
-	c.MaxRequests = 2000
+	c.MaxRequests = MaxRequests
 	c.MaxConcurrentRequests = 10
 	c.Verbose = BenchVerbose
 	b.ResetTimer()
@@ -44,7 +48,7 @@ func BenchmarkCrawl_Concurrent100StaticList(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
-	c.MaxRequests = 2000
+	c.MaxRequests = MaxRequests
 	c.MaxConcurrentRequests = 100
 	c.Verbose = BenchVerbose
 	b.ResetTimer()
@@ -56,7 +60,7 @@ func BenchmarkCrawl_Concurrent1000StaticList(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
-	c.MaxRequests = 2000
+	c.MaxRequests = MaxRequests
 	c.MaxConcurrentRequests = 1000
 	c.Verbose = BenchVerbose
 	b.ResetTimer()
@@ -68,8 +72,8 @@ func BenchmarkCrawl_Concurrent1000MongoList(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
-	c.MaxRequests = 2000
-	c.MaxConcurrentRequests = 1000
+	c.MaxRequests = MaxRequests
+	c.MaxConcurrentRequests = MaxConcurrentRequests
 	c.Verbose = BenchVerbose
 	b.ResetTimer()
 	c.Crawl("http://localhost:8080")
@@ -80,8 +84,8 @@ func BenchmarkCrawl_Concurrent1000MongoBST(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
-	c.MaxRequests = 2000
-	c.MaxConcurrentRequests = 1000
+	c.MaxRequests = MaxRequests
+	c.MaxConcurrentRequests = MaxConcurrentRequests
 	c.Verbose = BenchVerbose
 	b.ResetTimer()
 	c.Crawl("http://localhost:8080")

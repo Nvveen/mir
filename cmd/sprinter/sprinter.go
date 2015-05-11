@@ -24,14 +24,17 @@ var (
 )
 
 func runBench() {
+	// Set maximum number of CPUs
+	// TODO panics?
+	// runtime.GOMAXPROCS(runtime.NumCPU())
 	// Start local server
 	go sink.RunSink()
 	BenchVerbose = *verbose
 	// Benchmark
 	f := func(bn func(*testing.B)) {
 		name := runtime.FuncForPC(reflect.ValueOf(bn).Pointer()).Name()
-		b := testing.Benchmark(bn)
 		log.Printf("Benchmarking %s...\n", name)
+		b := testing.Benchmark(bn)
 		log.Printf("\tAllocated bytes per operation: %d\n", b.AllocsPerOp())
 		log.Printf("\tAllocations per operation: %d\n", b.AllocedBytesPerOp())
 		log.Printf("\tNanoseconds per operation: %d\n", b.NsPerOp())
