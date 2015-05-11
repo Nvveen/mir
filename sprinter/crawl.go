@@ -33,6 +33,7 @@ type Crawler struct {
 	robots                map[string]*robotstxt.RobotsData
 	robotsLock            sync.Mutex
 	log                   *log.Logger
+	Verbose               bool
 }
 
 var (
@@ -77,7 +78,9 @@ func (c *Crawler) Crawl(uri string) (err error) {
 	wg.Add(c.MaxRequests)
 	for count := 0; count < c.MaxRequests; count++ {
 		link := <-c.links
-		c.log.Println("retrieved", link)
+		if c.Verbose {
+			c.log.Println("retrieved", link)
+		}
 		// check for robots.txt
 		go func(l string, id int) {
 			c.functionBuffer <- true
@@ -100,7 +103,9 @@ func (c *Crawler) CrawlSequential(uri string) (err error) {
 	c.links <- uri
 	for count := 0; count < c.MaxRequests; count++ {
 		link := <-c.links
-		c.log.Println("retrieved", link)
+		if c.Verbose {
+			c.log.Println("retrieved", link)
+		}
 		// check for robots.txt
 		func(l string, id int) {
 			c.functionBuffer <- true
@@ -123,7 +128,9 @@ func (c *Crawler) extractInfo(link string, id int) {
 	if c.robotsIgnore(link) {
 		panic(fmt.Errorf("%s is ignored", link))
 	}
-	c.log.Printf("extracting %s\n", link)
+	if c.Verbose {
+		c.log.Printf("extracting %s\n", link)
+	}
 	client := &http.Client{
 		Timeout: time.Second * 5,
 	}
