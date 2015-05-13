@@ -30,6 +30,17 @@ func BenchmarkCrawl_SequentialStaticList(b *testing.B) {
 	c.CrawlSequential("http://localhost:8080")
 }
 
+func BenchmarkCrawl_SequentialStaticBST(b *testing.B) {
+	c, err := sprinter.NewCrawler(storage.NewMockStorage(), &containers.List{})
+	if err != nil {
+		b.Fatal(err)
+	}
+	c.MaxRequests = 2000
+	c.MaxConcurrentRequests = 1
+	b.ResetTimer()
+	c.CrawlSequential("http://localhost:8080")
+}
+
 func BenchmarkCrawl_Concurrent10StaticList(b *testing.B) {
 	c, err := sprinter.NewCrawler(storage.NewMockStorage(), &containers.List{})
 	if err != nil {

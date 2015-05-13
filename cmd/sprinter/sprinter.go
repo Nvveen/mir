@@ -44,6 +44,7 @@ func runBench() {
 		}
 	}
 	f(BenchmarkCrawl_SequentialStaticList)
+	f(BenchmarkCrawl_SequentialStaticBST)
 	f(BenchmarkCrawl_Concurrent10StaticList)
 	f(BenchmarkCrawl_Concurrent50StaticList)
 	f(BenchmarkCrawl_Concurrent100StaticList)
