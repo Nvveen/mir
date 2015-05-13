@@ -12,8 +12,22 @@ archive: sprinter
 sink:
 	cd cmd/sink; go build .
 
+deliverable: project-progress project-report archive
+	mkdir -v Neal-vanVeen-s0718971-deliverable
+	cp project-*/*.{tex,pdf} Neal-vanVeen-s0718971-deliverable/
+	cd Neal-vanVeen-s0718971-deliverable; git clone https://github.com/Nvveen/mir
+	cp README-deliverable Neal-vanVeen-s0718971-deliverable/README.md
+	cp sprinter.tar.gz Neal-vanVeen-s0718971-deliverable/
+
+project-progress:
+	cd project-progress; make && make && make
+
+project-report:
+	cd project-report; make && make && make
+
 clean:
 	rm -rf cmd/sprinter/sprinter
-	rm cmd/sink/sink
+	rm -rf cmd/sink/sink
+	rm -rf Neal-vanVeen-s0718971-deliverable
 
 .PHONY: sprinter

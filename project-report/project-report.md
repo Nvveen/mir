@@ -19,7 +19,8 @@ written in Go and test its various concurrency features, alongside two
 datastructures that show how programming in Go works.
 Results show a marked improvement over sequential crawling, hitting a performance
 ceiling at about 100 goroutines. We then conclude the goal of this project
-was succesful. The code for this project can be found at <https://github.com/Nvveen/mir>.
+was succesful. The code for this project can be found at <https://github.com/Nvveen/mir>,
+and all source code was written by the author.
 
 ## Introduction
 
@@ -128,6 +129,12 @@ However, because each page can be indexed separately, these operations are
 highly parallelizable, both on the link level, and on the page level. For this
 assignment, we will examine the parallelization on the link level, although
 the code can be easily extended to support concurrent indexing on the page level.
+
+# Figure: Example {#figexample}
+
+![](img/screen.jpg)
+
+Caption: An example of output.
 
 ## Research Description
 The features mentioned in Section \ref{features} are used to create a webcrawler
