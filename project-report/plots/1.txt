@@ -1,0 +1,9 @@
+# Concurrent Requests     Seconds per operation
+1	                        406
+10	                      42
+50	                      12
+100	                      7
+500	                      6
+1000	                    6
+100	                      5
+100	                      5

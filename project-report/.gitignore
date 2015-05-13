@@ -1,0 +1,5 @@
+plots/*.eps
+plots/*.pdf
+*.nav
+*.snm
+*.toc

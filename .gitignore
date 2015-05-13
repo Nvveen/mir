@@ -2,3 +2,8 @@ cmd/sprinter/sprinter
 cmd/sink/sink
 test/
 sprinter.tar.gz
+*.eps
+*.pdf
+*.aux
+*.log
+*.out
