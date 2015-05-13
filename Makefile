@@ -21,6 +21,7 @@ deliverable: progress report archive
 	cd Neal-vanVeen-s0718971-deliverable; git clone https://github.com/Nvveen/mir
 	cp README-deliverable Neal-vanVeen-s0718971-deliverable/README.md
 	cp sprinter.tar.gz Neal-vanVeen-s0718971-deliverable/
+	tar czvf Neal-vanVeen-s0718971-deliverable.tar.gz Neal-vanVeen-s0718971-deliverable
 
 progress:
 	cd project-progress; make && make && make

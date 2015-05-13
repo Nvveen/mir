@@ -24,12 +24,6 @@
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 % use microtype if available
 \IfFileExists{microtype.sty}{\usepackage{microtype}}{}
-\usepackage{longtable,booktabs}
-\usepackage{caption}
-% These lines are needed to make table captions work with longtable:
-\makeatletter
-\def\fnum@table{\tablename~\thetable}
-\makeatother
 
 % Comment these out if you don't want a slide with just the
 % part/section/subsection/subsubsection title:
@@ -52,37 +46,20 @@
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt plus 2pt minus 1pt}
 \setlength{\emergencystretch}{3em}  % prevent overfull lines
+\usepackage{cleveref}
 
-\date{}
+\title{A better webcrawler in Go}
+\subtitle{Multimedia Information Retrieval}
+\author{Neal van Veen}
+\date{\today}
 
 \begin{document}
+\frame{\titlepage}
 
-\begin{frame}\frametitle{}
-
-\ctable[pos = H, center, botcap]{l}
-{% notes
-}
-{% rows
-\FL
-title: A better webcrawler in Go
-\\\noalign{\medskip}
-subtitle: Multimedia Information Retrieval
-\\\noalign{\medskip}
-author: Neal van Veen
-\\\noalign{\medskip}
-header-includes:
-\\\noalign{\medskip}
-- \usepackage{cleveref}
-\\\noalign{\medskip}
-date: \today
-\LL
-}
-
-\end{frame}
-
-\begin{frame}\frametitle{Advantages in Go}
+\begin{frame}{Advantages in Go}
 
 \begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
 \item
   Static compiled
 \item
@@ -94,11 +71,13 @@ date: \today
 \item
   Tooling
 \end{itemize}
+
 \end{frame}
 
-\begin{frame}\frametitle{Disadvantages}
+\begin{frame}{Disadvantages}
 
 \begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
 \item
   Not very flexible in syntax
 \item
@@ -110,11 +89,13 @@ date: \today
 \item
   Language is still very young, needs improvements
 \end{itemize}
+
 \end{frame}
 
-\begin{frame}\frametitle{Challenges}
+\begin{frame}{Challenges}
 
 \begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
 \item
   Aforementioned safety is a problem
 \item
@@ -124,11 +105,13 @@ date: \today
 \item
   No real idiomatic way of handling errors
 \end{itemize}
+
 \end{frame}
 
-\begin{frame}\frametitle{Data structures}
+\begin{frame}{Data structures}
 
 \begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
 \item
   Implemented simple linked list, binary tree and fragment tree.
 \item
@@ -148,11 +131,13 @@ date: \today
   Also use a mock storage (a simple hashmap) for unittesting, that
   conforms to the same Storage interface.
 \end{itemize}
+
 \end{frame}
 
-\begin{frame}\frametitle{Results}
+\begin{frame}{Results}
 
 \begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
 \item
   Developed a simple Go program that generates links on a local network
   with a 20ms delay, so we don't pester certain websites (the LIACS
@@ -173,6 +158,7 @@ date: \today
 \item
   Storage requirements for datastructures haven't been analyzed yet.
 \end{itemize}
+
 \end{frame}
 
 \end{document}
