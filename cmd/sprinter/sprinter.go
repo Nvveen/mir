@@ -109,6 +109,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	c.MaxRequests = 2000
+	c.MaxConcurrentRequests = 100
 	c.Verbose = *verbose
 	err = c.Crawl(*uri)
 	if err != nil {
