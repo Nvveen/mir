@@ -1,0 +1,164 @@
+\documentclass[ignorenonframetext,]{beamer}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{:}
+\setbeamercolor{caption name}{fg=normal text.fg}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\usepackage{lmodern}
+\ifxetex
+  \usepackage{fontspec,xltxtra,xunicode}
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\else
+  \ifluatex
+    \usepackage{fontspec}
+    \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+    \newcommand{\euro}{€}
+  \else
+    \usepackage[T1]{fontenc}
+    \usepackage[utf8]{inputenc}
+      \fi
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{\usepackage{microtype}}{}
+
+% Comment these out if you don't want a slide with just the
+% part/section/subsection/subsubsection title:
+\AtBeginPart{
+  \let\insertpartnumber\relax
+  \let\partname\relax
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \let\insertsectionnumber\relax
+  \let\sectionname\relax
+  \frame{\sectionpage}
+}
+\AtBeginSubsection{
+  \let\insertsubsectionnumber\relax
+  \let\subsectionname\relax
+  \frame{\subsectionpage}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\usepackage{cleveref}
+
+\title{A better webcrawler in Go}
+\subtitle{Multimedia Information Retrieval}
+\author{Neal van Veen}
+\date{\today}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{Advantages in Go}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Static compiled
+\item
+  Rapid deployment (think Docker)
+\item
+  Very simple and easy to learn
+\item
+  Concurrency primitives
+\item
+  Tooling
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Disadvantages}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Not very flexible in syntax
+\item
+  Sometimes a bit too simple
+\item
+  Not as safe as needed when dealing with concurrency
+\item
+  Not as fast as C/C++
+\item
+  Language is still very young, needs improvements
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Challenges}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Aforementioned safety is a problem
+\item
+  Hashmaps used are not thread-safe, deadlocking remains an issue
+\item
+  New way of thinking when programming for concurrency
+\item
+  No real idiomatic way of handling errors
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Data structures}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Implemented simple linked list, binary tree and fragment tree.
+\item
+  Fragment-tree does not conform to Container interface, so haven't used
+  it yet
+\item
+  Using a two thousand element-big hashmap for keeping track of
+  robots.txt
+\item
+  When it is full, it is cleared, so we can somewhat buffer the contents
+  without storing everything
+\item
+  Developed a unit-testing framework for using a MongoDB backend
+\item
+  No testing done for actual communication with backend over a network
+\item
+  Also use a mock storage (a simple hashmap) for unittesting, that
+  conforms to the same Storage interface.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Results}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Developed a simple Go program that generates links on a local network
+  with a 20ms delay, so we don't pester certain websites (the LIACS
+  websites, for instance) with too much testing HTTP requests.
+\item
+  Sequential crawling of 5 minutes for 2000 requests.
+\item
+  Concurrent crawling with 10 goroutines of 40 seconds for 2000
+  requests.
+\item
+  Concurrent crawling with 100 goroutines of 6 seconds for 2000
+  requests.
+\item
+  More goroutines testing planned, running on better hardware.
+\item
+  Will be running a crawling session with a large (1000ish, hopefully)
+  on the open net.
+\item
+  Storage requirements for datastructures haven't been analyzed yet.
+\end{itemize}
+
+\end{frame}
+
+\end{document}
