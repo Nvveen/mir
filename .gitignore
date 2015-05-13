@@ -8,3 +8,4 @@ sprinter.tar.gz
 *.log
 *.out
 Neal-vanVeen-s0718971-deliverable
+!project-progress/*.pdf

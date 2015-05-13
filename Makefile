@@ -3,7 +3,7 @@ all: sprinter
 sprinter:
 	cd cmd/sprinter; mkdir -pv sprinter/sprinter
 	mkdir -pv cmd/sprinter/sprinter/sprinter cmd/sprinter/sprinter/storage/
-	cd cmd/sprinter/sprinter/sprinter; go build ../../
+	cd cmd/sprinter/sprinter/sprinter; go get ../../ && go build ../../
 	cp -R storage/mongo_test/ cmd/sprinter/sprinter/storage
 
 archive: sprinter
@@ -12,17 +12,20 @@ archive: sprinter
 sink:
 	cd cmd/sink; go build .
 
-deliverable: project-progress project-report archive
+deliverable: progress report archive
 	mkdir -v Neal-vanVeen-s0718971-deliverable
-	cp project-*/*.{tex,pdf} Neal-vanVeen-s0718971-deliverable/
+	cp project-progress/project-progress.tex Neal-vanVeen-s0718971-deliverable/
+	cp project-progress/project-progress.pdf Neal-vanVeen-s0718971-deliverable/
+	cp project-report/project-report.tex Neal-vanVeen-s0718971-deliverable/
+	cp project-report/project-report.pdf Neal-vanVeen-s0718971-deliverable/
 	cd Neal-vanVeen-s0718971-deliverable; git clone https://github.com/Nvveen/mir
 	cp README-deliverable Neal-vanVeen-s0718971-deliverable/README.md
 	cp sprinter.tar.gz Neal-vanVeen-s0718971-deliverable/
 
-project-progress:
+progress:
 	cd project-progress; make && make && make
 
-project-report:
+report:
 	cd project-report; make && make && make
 
 clean:
