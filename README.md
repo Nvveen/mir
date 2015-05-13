@@ -24,3 +24,9 @@ the program and creates a directory structure so that the benchmarking can be ru
 This folder is called `sprinter` and resides in `cmd/sprinter`, or you can
 unpack it from `./sprinter.tar.gz`.
 
+In short, the requirements to run all benchmarks are:
+- The Go compiler
+- MongoDB
+- Supervisor
+If not running a benchmark, but just performing a 2000 request crawl, only
+the Go compiler is needed.
